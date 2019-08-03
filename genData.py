@@ -1,4 +1,3 @@
-
 def target_func(x): # evolution's target
     return x*x*x*x + x*x*x + x*x + x + 1
 

@@ -6,6 +6,7 @@ from IPython.display import Image, display
 from graphviz import Digraph, Source 
 
 from GPSetup import *
+import subprocess
 
 
 class GPTree:
@@ -121,20 +122,25 @@ def init_population(): # ramped half-and-half
 def error(individual, dataset):
     return mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
 
-def fitness(individual, dataset): 
-    if BLOAT_CONTROL:
-        return 1 / (1 + error(individual, dataset) + 0.01*individual.size())
-    else:
-        return 1 / (1 + error(individual, dataset))
+# def fitness(individual, dataset): 
+#     if BLOAT_CONTROL:
+#         return 1 / (1 + error(individual, dataset) + 0.01*individual.size())
+#     else:
+#         return 1 / (1 + error(individual, dataset))
 
-def fitness_srt(individual, instances):
-    mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
+def fitness(individual, executable, instances):
+    scores = [subprocess.run(executable.split() + [inst[0], str( individual.compute_tree(int(inst[1])) )], 
+        stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
+    print('all scores:', scores)
+    avg_score = mean( list(map(int, scores)) )
+    print('avg score:', avg_score)
+    return avg_score
 
 def selection(population, fitnesses): # select one individual using tournament selection
+    #return deepcopy(population[randint(0, len(population)-1)]) 
     tournament = [randint(0, len(population)-1) for i in range(TOURNAMENT_SIZE)] # select tournament contenders
     tournament_fitnesses = [fitnesses[tournament[i]] for i in range(TOURNAMENT_SIZE)]
     return deepcopy(population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
-
 
 
 # plotting functions
