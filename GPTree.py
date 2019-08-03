@@ -104,7 +104,7 @@ class GPTree:
 
 
 
-
+# GP functions
 def init_population(): # ramped half-and-half
     pop = []
     for md in range(3, MAX_DEPTH + 1):
@@ -127,11 +127,17 @@ def fitness(individual, dataset):
     else:
         return 1 / (1 + error(individual, dataset))
 
+def fitness_srt(individual, instances):
+    mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
+
 def selection(population, fitnesses): # select one individual using tournament selection
     tournament = [randint(0, len(population)-1) for i in range(TOURNAMENT_SIZE)] # select tournament contenders
     tournament_fitnesses = [fitnesses[tournament[i]] for i in range(TOURNAMENT_SIZE)]
     return deepcopy(population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
 
+
+
+# plotting functions
 def prepare_plots():
     fig, axarr = plt.subplots(2, sharex=True)
     fig.canvas.set_window_title('EVOLUTIONARY PROGRESS')

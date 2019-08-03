@@ -50,4 +50,6 @@ for i in range(1, nb_iter+1):
     if (deb): print(i, sol1, fsol1)
 
 
-print('Score:', fsol1)
+if (deb): print('Score: ', end='')
+print(fsol1, end='')
+if (deb): print()

@@ -12,4 +12,4 @@ def sub(x, y): return x - y
 def mul(x, y): return x * y
 
 FUNCTIONS = [add, sub, mul]
-TERMINALS = ['x', -2, -1, 0, 1, 2] 
+TERMINALS = ['x', -2, -1, 1, 2] 
