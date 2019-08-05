@@ -14,7 +14,7 @@ class GPTree:
         self.data  = data
         self.left  = left
         self.right = right
-        
+
     def node_label(self): # return string label
         if (self.data in FUNCTIONS):
             return self.data.__name__
@@ -91,8 +91,8 @@ class GPTree:
                 self.data  = second.data
                 self.left  = second.left
                 self.right = second.right
-        else:  
-            ret = None              
+        else:
+            ret = None      
             if self.left  and count[0] > 1: ret = self.left.scan_tree(count, second)  
             if self.right and count[0] > 1: ret = self.right.scan_tree(count, second)  
             return ret
@@ -131,9 +131,7 @@ def error(individual, dataset):
 def fitness(individual, executable, instances):
     scores = [subprocess.run(executable.split() + [inst[0], str( individual.compute_tree(int(inst[1])) )], 
         stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
-    print('all scores:', scores)
     avg_score = mean( list(map(int, scores)) )
-    print('avg score:', avg_score)
     return avg_score
 
 def selection(population, fitnesses): # select one individual using tournament selection

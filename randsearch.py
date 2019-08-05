@@ -13,7 +13,6 @@
 import sys
 from random import random, randint, seed
 import copy
-#from copy import deepcopy
 
 instance = sys.argv[1]
 nb_iter = int(sys.argv[2])

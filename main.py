@@ -1,7 +1,7 @@
-#!/usr/bin/python3
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #=================================================================================
-# Tuning engine based on tiny genetic programming plus, by moshe sipper
+# Tuning engine (based on tiny genetic programming plus, by moshe sipper)
 #=================================================================================
 
 from random import random, randint, seed
@@ -14,36 +14,36 @@ from genData import *
 from GPTree import *
 from GPSetup import *
 
-#=============================
+#==========================================================
 # tunner input
-#=============================
+#==========================================================
 # algorithm executable
-executable = 'python3 randsearch.py'
+with open('srt_executable.txt', 'r') as file:
+    executable = file.read().replace('\n', '')
 
 # instances/features list
 f = open('srt_instances.txt', 'r')
 instances = [(line.split()) for line in f.readlines()[1:]]
 f.close()
-#=============================
+#==========================================================
 
-# init stuff
+
+#==========================================================
+# initialisation
+#==========================================================
 seed() # init internal state of random number generator
 dataset = generate_dataset()
 population = init_population() 
-
-# TODO to use in fitness
-param = '10'
-scores = [subprocess.run(executable.split() + [inst[0], param], stdout=subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
-print(scores)
-fitness(population[0], executable, instances)
-
-
 best_program = None
 best_gen = 0
 best_fitness = -1e20
 fitnesses = [fitness(ind, executable, instances) for ind in population]
+#==========================================================
 
+
+#==========================================================
 # evolve programs
+#==========================================================
 for gen in range(GENERATIONS):        
     print('GEN:', gen)
 
@@ -65,6 +65,8 @@ for gen in range(GENERATIONS):
         best_program = deepcopy(population[fitnesses.index(max(fitnesses))])
         print("________________________")
 
+#==========================================================
 
 
+# save best program
 best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
