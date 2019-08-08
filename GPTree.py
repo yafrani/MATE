@@ -104,7 +104,7 @@ class GPTree:
 # end class GPTree
 
 
-
+'''
 # GP functions
 def init_population(): # ramped half-and-half
     pop = []
@@ -122,15 +122,8 @@ def init_population(): # ramped half-and-half
 def error(individual, dataset):
     return mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
 
-# def fitness(individual, dataset): 
-#     if BLOAT_CONTROL:
-#         return 1 / (1 + error(individual, dataset) + 0.01*individual.size())
-#     else:
-#         return 1 / (1 + error(individual, dataset))
-
 def fitness(individual, executable, instances):
-    scores = [subprocess.run(executable.split() + [inst[0], str( individual.compute_tree(int(inst[1])) )], 
-        stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
+    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree(int(inst[1])) )], stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
     avg_score = mean( list(map(int, scores)) )
     return avg_score
 
@@ -173,3 +166,4 @@ def plot(axarr, line, xdata, ydata, gen, pop, errors, max_mean_size):
     line[1].set_ydata(ydata[1])
     plt.draw()  
     plt.pause(0.01)
+'''

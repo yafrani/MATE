@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 #=================================================================================
 # Tuning engine (based on tiny genetic programming plus, by moshe sipper)
 #=================================================================================
@@ -10,9 +10,9 @@ from copy import deepcopy
 from IPython.display import Image, display
 from graphviz import Digraph, Source 
 
-from genData import *
-from GPTree import *
+from GP import *
 from GPSetup import *
+
 
 #==========================================================
 # tunner input
@@ -32,12 +32,12 @@ f.close()
 # initialisation
 #==========================================================
 seed() # init internal state of random number generator
-dataset = generate_dataset()
-population = init_population() 
+population = init_population()
 best_program = None
 best_gen = 0
 best_fitness = -1e20
 fitnesses = [fitness(ind, executable, instances) for ind in population]
+print("==>",fitnesses)
 #==========================================================
 
 
@@ -57,13 +57,14 @@ for gen in range(GENERATIONS):
     population = nextgen_population
     fitnesses = [fitness(ind, executable, instances) for ind in population]
     print(fitnesses)
+
     # if we have an improvement
     best_fitness_pop = max(fitnesses)
     if best_fitness_pop > best_fitness:
         best_fitness = best_fitness_pop
         best_gen = gen
         best_program = deepcopy(population[fitnesses.index(max(fitnesses))])
-        print("________________________")
+    print("________________________")
 
 #==========================================================
 

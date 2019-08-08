@@ -24,6 +24,10 @@ if (len(sys.argv)>3 and sys.argv[3]==str(1)):
 if (deb): print("Instance: onemax", instance)
 size = int(instance)
 
+if (nb_iter>size*size or nb_iter<1):
+    print("-1")
+    exit()
+
 def fitness(sol):
     return sol.count(1)
 
