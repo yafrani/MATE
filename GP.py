@@ -27,16 +27,9 @@ def init_population(): # ramped half-and-half
 def error(individual, dataset):
     return mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
 
-def fitness2(individual, executable, instances):
-    for inst in instances:
-        command = subprocess.run(executable.split()+[inst[0], str( individual.compute_tree(int(inst[1])) )], stdout = subprocess.PIPE).stdout.decode('utf-8')
-        print(command)
-
-    avg_score = mean( list(map(int, scores)) )
-    return avg_score
-
 def fitness(individual, executable, instances):
-    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree(int(inst[1])) )], stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
+    print(  str(individual.compute_tree(float(instances[0][1])))  )
+    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree(float(inst[1])) )], stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
     avg_score = mean( list(map(int, scores)) )
     return avg_score
 
@@ -51,7 +44,7 @@ def selection(population, fitnesses): # select one individual using tournament s
 def prepare_plots():
     fig, axarr = plt.subplots(2, sharex=True)
     fig.canvas.set_window_title('EVOLUTIONARY PROGRESS')
-    fig.subplots_adjust(hspace = 0.5)
+    fig.subplots_just(hspace = 0.5)
     axarr[0].set_title('error', fontsize=14)
     axarr[1].set_title('mean size', fontsize=14)
     plt.xlabel('generation', fontsize=18)

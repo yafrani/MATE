@@ -1,1 +1,1 @@
-python3 randsearch.py
+python3 RLS_onemax.py

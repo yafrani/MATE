@@ -1,3 +1,4 @@
+from math import inf
 GENERATIONS     = 10    # maximal number of generations to run evolution
 POP_SIZE        = 10    # population size
 MIN_DEPTH       = 2     # minimal initial random tree depth
@@ -10,6 +11,7 @@ BLOAT_CONTROL   = False # True adds bloat control to fitness function
 def add(x, y): return x + y
 def sub(x, y): return x - y
 def mul(x, y): return x * y
+def div(x, y): return x / y if y!=0 else inf
 
-FUNCTIONS = [add, sub, mul]
+FUNCTIONS = [add, sub, mul, div]
 TERMINALS = ['x', -2, -1, 1, 2] 
