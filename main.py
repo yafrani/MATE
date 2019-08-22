@@ -10,6 +10,8 @@ from copy import deepcopy
 from IPython.display import Image, display
 from graphviz import Digraph, Source 
 
+from sympy import simplify, symbols
+
 from GP import *
 from GPSetup import *
 
@@ -71,3 +73,9 @@ for gen in range(GENERATIONS):
 
 # save best program
 best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
+
+exp = best_program.infix_exp()
+print(exp)
+x=symbols('x')
+sexp = simplify(exp)
+print(sexp)

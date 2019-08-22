@@ -1,4 +1,5 @@
 from math import inf
+
 GENERATIONS     = 10    # maximal number of generations to run evolution
 POP_SIZE        = 10    # population size
 MIN_DEPTH       = 2     # minimal initial random tree depth
@@ -15,3 +16,10 @@ def div(x, y): return x / y if y!=0 else inf
 
 FUNCTIONS = [add, sub, mul, div]
 TERMINALS = ['x', -2, -1, 1, 2] 
+
+FUNCTION_SYM = {
+'add':'+', 
+'sub':'-', 
+'mul':'*', 
+'div':'/'
+}

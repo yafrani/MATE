@@ -39,7 +39,6 @@ if (mut_rate>1 or mut_rate<0):
 def fitness(sol):
     return sol.count(1)
 
-
 sol1 = [randint(0, 1) for i in range(size)] # select tournament contenders
 fsol1 = fitness(sol1)
 
