@@ -21,7 +21,13 @@ class GPTree:
         else: 
             return str(self.data)
 
-    def compute_tree(self, x):
+    def compute_tree(self, features):
+        if (self.data in FUNCTIONS):
+            return self.data(self.left.compute_tree(features), self.right.compute_tree(features))
+        elif self.data in FEATURES: return features[FEATURES.index(self.data)]
+        else: return self.data
+
+    def compute_tree2(self, x):
         if (self.data in FUNCTIONS):
             return self.data(self.left.compute_tree(x), self.right.compute_tree(x))
         elif self.data == 'x': return x

@@ -3,7 +3,7 @@ from statistics import mean
 from copy import deepcopy
 
 from GPTree import *
-from GPSetup import *
+import GPSetup
 import subprocess
 
 import platform
@@ -42,7 +42,10 @@ class GP:
 
 def fitness(individual, executable, instances):
     #print(  str(individual.compute_tree(float(instances[0][1])))  )
-    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree(float(inst[1])) )], stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
+    #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
+
+    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree( [float(i) for i in inst[1:]] ) )], 
+        stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
     avg_score = mean( list(map(int, scores)) )
     return avg_score
 

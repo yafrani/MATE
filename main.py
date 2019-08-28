@@ -27,10 +27,19 @@ import platform
 with open('srt_executable.txt', 'r') as file:
     executable = file.read().replace('\n', '')
 
-# instances/features list
-f = open('srt_instances.txt', 'r')
-instances = [(line.split()) for line in f.readlines()[1:]]
-f.close()
+# list of instances
+with open('srt_instances.txt', 'r') as file:
+    instances = [line.split() for line in file.readlines()[1:]]
+
+'''
+# list of parameters
+with open('srt_parameters.txt', 'r') as file:
+    parameters = [line.split() for line in file.readlines()[1:]]
+'''
+#==========================================================
+print('Features:\n'+','.join(FEATURES))
+print('Instances:')
+[print(inst[0]+':', inst[1:]) for inst in instances]
 #==========================================================
 
 
@@ -44,7 +53,7 @@ best_program = None
 best_gen = 0
 best_fitness = -1e20
 fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-print("==>",fitnesses)
+#print("==>",fitnesses)
 #==========================================================
 
 
@@ -63,7 +72,7 @@ for gen in range(GENERATIONS):
         nextgen_population.append(parent1)
     gp.population = nextgen_population
     fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-    print(fitnesses)
+    print('Fitnesses:',fitnesses)
 
     # if we have an improvement
     best_fitness_pop = max(fitnesses)
@@ -71,7 +80,7 @@ for gen in range(GENERATIONS):
         best_fitness = best_fitness_pop
         best_gen = gen
         best_program = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
-    print("________________________")
+    print("--------------------------------")
 #==========================================================
 
 
@@ -81,8 +90,10 @@ for gen in range(GENERATIONS):
 best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
 
 exp = best_program.infix_expression()
-print(exp)
-x, y = symbols('x,y')
+[exec("%s = %d" % (F,2)) for F in FEATURES]
+#SIZE = symbols(' '.join(FEATURES))
 sexp = simplify(exp)
 print(sexp)
+print('Final expression:',sexp)
+print('Final simplified expression:',sexp)
 #==========================================================
