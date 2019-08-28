@@ -21,26 +21,6 @@ class GPTree:
         else: 
             return str(self.data)
 
-    def draw(self, dot, count): # dot & count are lists in order to pass "by reference" 
-        node_name = str(count[0])
-        dot[0].node(node_name, self.node_label())
-        if self.left:
-            count[0] += 1
-            dot[0].edge(node_name, str(count[0]))
-            self.left.draw(dot, count)
-        if self.right:
-            count[0] += 1
-            dot[0].edge(node_name, str(count[0]))
-            self.right.draw(dot, count)
-
-    def draw_tree(self, fname, footer):
-        dot = [Digraph()]
-        dot[0].attr(kw='graph', label = footer)
-        count = [0]
-        self.draw(dot, count)
-        Source(dot[0], filename = fname + ".gv", format="png").render()
-        display(Image(filename = fname + ".gv.png"))
-
     def compute_tree(self, x):
         if (self.data in FUNCTIONS):
             return self.data(self.left.compute_tree(x), self.right.compute_tree(x))
@@ -102,27 +82,38 @@ class GPTree:
             second = other.scan_tree([randint(1, other.size())], None) # 2nd random subtree
             self.scan_tree([randint(1, self.size())], second) # 2nd subtree "glued" inside 1st tree
 
-    # def exp(self):
-    #     if self.data in TERMINALS:
-    #         print(str(self.data)+'#',end='')
-    #     elif self.data in FUNCTIONS:
-    #         print(self.data.__name__+'(',end='')
+    def draw(self, dot, count): # dot & count are lists in order to pass "by reference" 
+        node_name = str(count[0])
+        dot[0].node(node_name, self.node_label())
+        if self.left:
+            count[0] += 1
+            dot[0].edge(node_name, str(count[0]))
+            self.left.draw(dot, count)
+        if self.right:
+            count[0] += 1
+            dot[0].edge(node_name, str(count[0]))
+            self.right.draw(dot, count)
 
-    #     if self.data not in TERMINALS:
-    #         self.left.show2()
-    #         self.right.show2()
+    def draw_tree(self, fname, footer):
+        dot = [Digraph()]
+        dot[0].attr(kw='graph', label = footer)
+        count = [0]
+        self.draw(dot, count)
+        Source(dot[0], filename = fname + ".gv", format="png").render()
+        display(Image(filename = fname + ".gv.png"))
 
-    def infix_exp(self):
+
+    def infix_expression(self):
 
         exp = ''
         if self.data in FUNCTIONS:
             exp += '('
 
         if self.left:
-            exp += self.left.infix_exp()
+            exp += self.left.infix_expression()
         exp += str(self.data if self.data in TERMINALS else FUNCTION_SYM[self.data.__name__])
         if self.right:
-            exp += self.right.infix_exp()
+            exp += self.right.infix_expression()
         
         if self.data in FUNCTIONS:
             exp += ')'

@@ -15,6 +15,7 @@ def mul(x, y): return x * y
 def div(x, y): return x / y if y!=0 else inf
 
 FUNCTIONS = [add, sub, mul, div]
+
 TERMINALS = ['x', -2, -1, 1, 2] 
 
 FUNCTION_SYM = {
