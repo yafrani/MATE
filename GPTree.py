@@ -27,12 +27,6 @@ class GPTree:
         elif self.data in FEATURES: return features[FEATURES.index(self.data)]
         else: return self.data
 
-    def compute_tree2(self, x):
-        if (self.data in FUNCTIONS):
-            return self.data(self.left.compute_tree(x), self.right.compute_tree(x))
-        elif self.data == 'x': return x
-        else: return self.data
-
     def random_tree(self, grow, max_depth, depth = 0): # create random tree using either grow or full method
         if depth < MIN_DEPTH or (depth < max_depth and not grow): 
             self.data = FUNCTIONS[randint(0, len(FUNCTIONS)-1)]

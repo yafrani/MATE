@@ -40,7 +40,7 @@ class GP:
 
 
 
-def fitness(individual, executable, instances):
+def fitness2(individual, executable, instances):
     #print(  str(individual.compute_tree(float(instances[0][1])))  )
     #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
 
@@ -50,7 +50,20 @@ def fitness(individual, executable, instances):
     return avg_score
 
 
-#def error(self, individual, dataset):
-#    return mean([abs(individual.compute_tree(ds[0]) - ds[1]) for ds in dataset])
+def fitness(individual, executable, instances):
+    #print(  str(individual.compute_tree(float(instances[0][1])))  )
+    #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
 
+    scores = []
+    #print(instances)
+    for inst in instances:
+        param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
+        # if stochastic, repeat k times:
+        scores.append( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+        #print('>>',param_value)
 
+    print(scores)
+
+    avg_score = mean( list(map(float, scores)) )
+    print(avg_score)
+    return avg_score

@@ -33,7 +33,7 @@ size = int(instance)
 nb_iter = ceil(size*log(size))
 
 if (mut_rate>1 or mut_rate<0):
-    print("-1")
+    print("-1", end='')
     exit()
 
 def fitness(sol):
