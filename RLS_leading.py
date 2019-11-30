@@ -37,7 +37,7 @@ if (mut_rate>1 or mut_rate<0):
     print("-1")
     exit()
 
-def fitness(sol,size):   
+def fitness(sol):   
     count = 0 
     for i in range(0, size): 
         if (sol[i] == 1): 
@@ -47,7 +47,7 @@ def fitness(sol,size):
     return count
 
 sol1 = [randint(0, 1) for i in range(size)] # select tournament contenders
-fsol1 = fitness(sol1,size)
+fsol1 = fitness(sol1)
 
 if (deb): print(sol1, fsol1)
 
@@ -63,7 +63,7 @@ for i in range(1, nb_iter+1):
             solx[j] = 0 if solx[j] == 1 else 1
 
     # check if the new solution is better than the current one
-    fsolx = fitness(solx,size)
+    fsolx = fitness(solx)
     if (fsolx>fsol1):
         sol1 = solx
         fsol1 = fsolx
