@@ -31,19 +31,28 @@ with open('srt_executable.txt', 'r') as file:
 with open('srt_instances.txt', 'r') as file:
     instances = [line.split() for line in file.readlines()[1:]]
 
-
 # list of parameters
 with open('srt_parameters.txt', 'r') as file:
     parameters = [line.split() for line in file.readlines()[0:]]
 
 #==========================================================
+print('=============================================')
 print('Parameters:')
+print('=============================================')
 [print(param[0]) for param in parameters]
+print('=============================================')
 
-print('Features:\n'+','.join(FEATURES))
+print('=============================================')
+print('Features:')
+print('=============================================')
+print(','.join(FEATURES))
+print('=============================================')
 
+print('=============================================')
 print('Instances [+Features]:')
+print('=============================================')
 [print(inst[0]+':', inst[1:]) for inst in instances]
+print('=============================================')
 #==========================================================
 
 #==========================================================

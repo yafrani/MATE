@@ -55,15 +55,14 @@ def fitness(individual, executable, instances):
     #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
 
     scores = []
-    #print(instances)
     for inst in instances:
         param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
         # if stochastic, repeat k times:
         scores.append( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
-        #print('>>',param_value)
+        #print('>>',param_value, '  ',inst[0], '  ', inst[1])
 
-    print(scores)
+    # print(scores)
 
     avg_score = mean( list(map(float, scores)) )
-    print(avg_score)
+    # print(avg_score)
     return avg_score
