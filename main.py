@@ -55,6 +55,7 @@ print('=============================================')
 print('=============================================')
 #==========================================================
 
+
 #==========================================================
 # initialisation
 #==========================================================
@@ -73,7 +74,7 @@ fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
 # evolve programs
 #==========================================================
 for gen in range(GENERATIONS):
-    print('GEN:', gen)
+    print('GEN:', gen+1)
 
     nextgen_population = []
     for i in range(POP_SIZE):
@@ -84,14 +85,22 @@ for gen in range(GENERATIONS):
         nextgen_population.append(parent1)
     gp.population = nextgen_population
     fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-    print('Fitnesses:',fitnesses)
+    #print('Fitnesses:',fitnesses)
 
     # if we have an improvement
+    # TODO use sort instead...
     best_fitness_pop = max(fitnesses)
     if best_fitness_pop > best_fitness:
         best_fitness = best_fitness_pop
         best_gen = gen
         best_program = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
+    i=0
+    for program in gp.population:
+        exp = program.infix_expression()
+        print(fitnesses[i], ":", simplify(exp),">>",exp)
+        i = i+1
+        #param_value = program.compute_tree( [float(i) for i in inst[1:]] )
+
     print("--------------------------------")
 #==========================================================
 

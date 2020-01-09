@@ -51,18 +51,18 @@ def fitness2(individual, executable, instances):
 
 
 def fitness(individual, executable, instances):
-    #print(  str(individual.compute_tree(float(instances[0][1])))  )
-    #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
 
+    # create array containing individual scores for each instances
     scores = []
     for inst in instances:
+        # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
         param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
-        # if stochastic, repeat k times:
+
+        # execute target algorithm (executable) using the numerical parameter value for each instance
+        # TODO: if stochastic, repeat k times
         scores.append( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
-        #print('>>',param_value, '  ',inst[0], '  ', inst[1])
 
-    # print(scores)
-
+    # calculate the final score by averaging the obtained scores for each instance
     avg_score = mean( list(map(float, scores)) )
-    # print(avg_score)
+
     return avg_score
