@@ -1,10 +1,12 @@
-from random import random, randint, seed
+#from random import random, randint, seed
 from statistics import mean
 from copy import deepcopy
 
 from GPTree import *
 import GPSetup
+
 import subprocess
+import random
 
 import platform
 #print(platform.system())
@@ -50,7 +52,7 @@ def fitness2(individual, executable, instances):
     return avg_score
 
 
-def fitness(individual, executable, instances):
+def fitness3(individual, executable, instances):
 
     # create array containing individual scores for each instances
     scores = []
@@ -65,4 +67,30 @@ def fitness(individual, executable, instances):
     # calculate the final score by averaging the obtained scores for each instance
     avg_score = mean( list(map(float, scores)) )
 
+    return avg_score
+
+
+
+
+def fitness(individual, executable, instances):
+
+    global references
+
+    # create array containing individual scores for each instances
+    scores = []
+    for inst in instances:
+        # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
+        param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
+
+        # execute target algorithm (executable) using the numerical parameter value for each instance
+        # TODO: if stochastic, repeat k times
+        inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+        scores.append( inst_score/references[inst[0]] )
+        
+        # update references if a better one was found using GP
+        if (inst_score > references[inst[0]]):
+            references[inst[0]] = inst_score
+
+    # calculate the final score by averaging the obtained scores for each instance
+    avg_score = mean(scores)
     return avg_score

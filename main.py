@@ -21,25 +21,10 @@ import platform
 
 
 #==========================================================
-# tunner input
-#==========================================================
-# algorithm executable
-with open('srt_executable.txt', 'r') as file:
-    executable = file.read().replace('\n', '')
-
-# list of instances
-with open('srt_instances.txt', 'r') as file:
-    instances = [line.split() for line in file.readlines()[1:]]
-
-# list of parameters
-with open('srt_parameters.txt', 'r') as file:
-    parameters = [line.split() for line in file.readlines()[0:]]
-
-#==========================================================
 print('=============================================')
 print('Parameters:')
 print('=============================================')
-[print(param[0]) for param in parameters]
+[print(param[0], (': ['+param[1]+','+param[2]+']') if len(param)>=3 else '') for param in parameters]
 print('=============================================')
 
 print('=============================================')
@@ -54,6 +39,42 @@ print('=============================================')
 [print(inst[0]+':', inst[1:]) for inst in instances]
 print('=============================================')
 #==========================================================
+
+
+
+#==========================================================
+# Tune for parameter #1
+#==========================================================
+parameter = parameters[0]
+
+
+#==========================================================
+# Generate references fitnesses for each instance
+# and select best
+#==========================================================
+# calculate initial references
+param_name = parameter[0]
+lbound = int(parameter[1]) if len(parameter)>=3 else -999
+rbound = int(parameter[2]) if len(parameter)>=3 else +999
+
+for inst in instances:
+    for r in range(0, 10):
+        norm = (rbound+lbound)/10.0
+        step = (rbound-lbound)/10.0
+        # run with parameter
+        param_value = lbound + step*r + step/2
+        inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+
+        if (inst_score > references[inst[0]]):
+            references[inst[0]] = inst_score
+print('=============================================')
+print('Score references:')
+print('=============================================')
+for (inst, score) in references.items():
+    print(inst+':', score)
+print('=============================================')
+#print(references)
+#exit()
 
 
 #==========================================================

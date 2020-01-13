@@ -30,3 +30,26 @@ with open('srt_instances.txt', 'r') as file:
     FEATURES = file.readline().split()[1:]
 
 TERMINALS = FEATURES + [-2, -1, 1, 2]
+
+
+
+
+#==========================================================
+# tunner input
+#==========================================================
+# algorithm executable
+with open('srt_executable.txt', 'r') as file:
+    executable = file.read().replace('\n', '')
+
+# list of instances
+with open('srt_instances.txt', 'r') as file:
+    instances = [line.split() for line in file.readlines()[1:]]
+
+# list of parameters
+with open('srt_parameters.txt', 'r') as file:
+    parameters = [line.split() for line in file.readlines()[0:]]
+
+references = {}
+for inst in instances:
+    references[inst[0]] = -inf
+
