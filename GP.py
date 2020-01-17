@@ -34,7 +34,7 @@ class GP:
 
 
     # Tournament selection
-    def selection(self): # select one individual using tournament selection
+    def selection(self): # select one tree using tournament selection
         #return deepcopy(population[randint(0, len(population)-1)]) 
         tournament = [randint(0, len(self.population)-1) for i in range(TOURNAMENT_SIZE)] # select tournament contenders
         tournament_fitnesses = [self.population[tournament[i]].fitness for i in range(TOURNAMENT_SIZE)]
@@ -76,19 +76,19 @@ class GP:
             print('GEN:', gen+1)
 
             # generate a new population of same size
-            nextgen_population = []
+            new_trees = []
 
             for i in range(GEN_POP_SIZE):
                 parent1 = self.selection()
                 parent2 = self.selection()
-
                 # mate and mutate
                 offspring = parent1.crossover(parent2)
                 offspring.mutation()
-                nextgen_population.append(offspring)
+                # add to the new stack of trees
+                new_trees.append(offspring)
 
             # replacement (replace ~75%)
-            self.population[POP_SIZE-GEN_POP_SIZE:] = nextgen_population
+            self.population[POP_SIZE-GEN_POP_SIZE:] = new_trees
 
             # population evaluation
             for ind in self.population:
@@ -108,7 +108,8 @@ class GP:
             i = 1
             for program in self.population:
                 exp = program.infix_expression()
-                print(i,'>>',program.fitness, ':', simplify(exp), '|',program.regression_values,'#', hash(str(program.regression_values)))
+                print('#'+str(i)+' : F=%.2f' %program.fitness, ' | ', simplify(exp), '| {R}=', ['%.2f' %val for val in program.regression_values],'#', hash(str(program.regression_values)))
+                #print('              ->',program.fitness_history)
                 i = i+1
             print('--------------------------------')
         #==========================================================
@@ -117,21 +118,24 @@ class GP:
 
 
 # Evaluation function
-def fitness(individual, executable, instances):
+def fitness(tree, executable, instances):
 
     global references
 
-    # create array containing individual scores for each instances
+    # list of tree scores for each instances
     scores = []
-    # regression values (=parameter values)
-    individual.regression_values = []
+
+    # empty list of regression values
+    tree.regression_values = []
+
+    # run target algorithm for each instance
     for inst in instances:
         # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-        param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
-        individual.regression_values.append(param_value)
+        param_value = tree.compute_tree( [float(i) for i in inst[1:]] )
+        tree.regression_values.append(param_value)
 
         # execute target algorithm (executable) using the numerical parameter value for each instance
-        # TODO: if stochastic, repeat k times
+        # QUESTION: if stochastic: repeat k times vs. update on the fly (current)?
         inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
         scores.append( inst_score/references[inst[0]] )
         
@@ -140,13 +144,21 @@ def fitness(individual, executable, instances):
             references[inst[0]] = inst_score
 
     # calculate the final score by averaging the obtained scores for each instance
-#    score_avg_instances = 
-    individual.fitness = mean(scores)
-    individual.regression_hash = hash(str(individual.regression_values))
+    score_avg_instances = mean(scores)
 
-    #print("OKAY-------->",individual.fitness,'vs',mean(scores),'||',)
+    # save obtained score in fitness history
+    # QUESTION: old references included in these calculations,
+    #           is it worth it to save original score 
+    #           and re-normalise at each evaluation?
+    tree.fitness_history.append(score_avg_instances)
 
-    return individual.fitness
+    # calculate final tree fitness by averaging fitness history list
+    tree.fitness = mean(tree.fitness_history)
+
+    # calculate hash for regression values as a "unique" ID
+    tree.regression_hash = hash(str(tree.regression_values))
+
+    return tree.fitness
 
 
 
@@ -156,23 +168,23 @@ def fitness(individual, executable, instances):
 
 
 
-def fitness2(individual, executable, instances):
-    #print(  str(individual.compute_tree(float(instances[0][1])))  )
+def fitness2(tree, executable, instances):
+    #print(  str(tree.compute_tree(float(instances[0][1])))  )
     #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
 
-    scores = [subprocess.run(executable.split()+[inst[0], str( individual.compute_tree( [float(i) for i in inst[1:]] ) )], 
+    scores = [subprocess.run(executable.split()+[inst[0], str( tree.compute_tree( [float(i) for i in inst[1:]] ) )], 
         stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
     avg_score = mean( list(map(int, scores)) )
     return avg_score
 
 
-def fitness3(individual, executable, instances):
+def fitness3(tree, executable, instances):
 
-    # create array containing individual scores for each instances
+    # create array containing tree scores for each instances
     scores = []
     for inst in instances:
         # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-        param_value = individual.compute_tree( [float(i) for i in inst[1:]] )
+        param_value = tree.compute_tree( [float(i) for i in inst[1:]] )
 
         # execute target algorithm (executable) using the numerical parameter value for each instance
         # TODO: if stochastic, repeat k times

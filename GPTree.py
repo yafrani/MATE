@@ -15,9 +15,11 @@ class GPTree:
         self.left  = left
         self.right = right
 
+        # fitness data
         self.fitness_history = []
         self.fitness = -inf
 
+        # regression values data (=parameter values)
         self.regression_values = []
         self.regression_hash = None
 
@@ -65,7 +67,11 @@ class GPTree:
         # deep copy first parent
         offsping = deepcopy(self)
         # reintialise tree data
+        # fitness data
+        offsping.fitness_history = []
         offsping.fitness = -inf
+
+        # regression values data
         offsping.regression_values = []
         offsping.regression_hash = None
 
