@@ -19,6 +19,8 @@ from GPSetup import *
 import platform
 #print(platform.system()=='Linux')
 
+# init internal state of random number generator
+seed()
 
 #==========================================================
 print('=============================================')
@@ -41,7 +43,6 @@ print('=============================================')
 #==========================================================
 
 
-
 #==========================================================
 # Tune for parameter #1
 #==========================================================
@@ -51,12 +52,13 @@ parameter = parameters[0]
 #==========================================================
 # Generate references fitnesses for each instance
 # and select best
+# TODO: generalise to multiple parameters (e.g. grid search)
 #==========================================================
-# calculate initial references
+# parameter to 
 param_name = parameter[0]
 lbound = int(parameter[1]) if len(parameter)>=3 else -999
 rbound = int(parameter[2]) if len(parameter)>=3 else +999
-
+# calculate initial references
 for inst in instances:
     for r in range(0, 10):
         norm = (rbound+lbound)/10.0
@@ -67,75 +69,33 @@ for inst in instances:
 
         if (inst_score > references[inst[0]]):
             references[inst[0]] = inst_score
+
 print('=============================================')
 print('Score references:')
 print('=============================================')
 for (inst, score) in references.items():
     print(inst+':', score)
 print('=============================================')
-#print(references)
-#exit()
 
 
 #==========================================================
-# initialisation
+# GP evolution
 #==========================================================
-seed() # init internal state of random number generator
 gp = GP()
-gp.init_population()
-best_program = None
-best_gen = 0
-best_fitness = -1e20
-fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-#print("==>",fitnesses)
-#==========================================================
-
-
-#==========================================================
-# evolve programs
-#==========================================================
-for gen in range(GENERATIONS):
-    print('GEN:', gen+1)
-
-    nextgen_population = []
-    for i in range(POP_SIZE):
-        parent1 = gp.selection(fitnesses)
-        parent2 = gp.selection(fitnesses)
-        parent1.crossover(parent2)
-        parent1.mutation()
-        nextgen_population.append(parent1)
-    gp.population = nextgen_population
-    fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-    #print('Fitnesses:',fitnesses)
-
-    # if we have an improvement
-    # TODO use sort instead...
-    best_fitness_pop = max(fitnesses)
-    if best_fitness_pop > best_fitness:
-        best_fitness = best_fitness_pop
-        best_gen = gen
-        best_program = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
-    i=0
-    for program in gp.population:
-        exp = program.infix_expression()
-        print(fitnesses[i], ":", simplify(exp),">>",exp)
-        i = i+1
-        #param_value = program.compute_tree( [float(i) for i in inst[1:]] )
-
-    print("--------------------------------")
-#==========================================================
+best_program = gp.evolution()
 
 
 #==========================================================
 # save best program and simplify
 #==========================================================
-best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
+#best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
 
-exp = best_program.infix_expression()
+fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
+best_program2 = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
+exp = best_program2.infix_expression()
 [exec("%s = %d" % (F,2)) for F in FEATURES]
 #SIZE = symbols(' '.join(FEATURES))
 sexp = simplify(exp)
-
 print('Final expression:', exp)
 print('Final simplified expression:', sexp)
 #==========================================================

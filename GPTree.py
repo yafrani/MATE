@@ -15,19 +15,29 @@ class GPTree:
         self.left  = left
         self.right = right
 
-    def node_label(self): # return string label
+        self.fitness_history = []
+        self.fitness = -inf
+
+        self.regression_values = []
+        self.regression_hash = None
+
+
+    # String label
+    def node_label(self):
         if (self.data in FUNCTIONS):
             return self.data.__name__
         else: 
             return str(self.data)
 
+    # Evaluate tree
     def compute_tree(self, features):
         if (self.data in FUNCTIONS):
             return self.data(self.left.compute_tree(features), self.right.compute_tree(features))
         elif self.data in FEATURES: return features[FEATURES.index(self.data)]
         else: return self.data
 
-    def random_tree(self, grow, max_depth, depth = 0): # create random tree using either grow or full method
+    # Create random tree using either grow or full method
+    def random_tree(self, grow, max_depth, depth = 0):
         if depth < MIN_DEPTH or (depth < max_depth and not grow): 
             self.data = FUNCTIONS[randint(0, len(FUNCTIONS)-1)]
         elif depth >= max_depth:   
@@ -43,13 +53,29 @@ class GPTree:
             self.right = GPTree()
             self.right.random_tree(grow, max_depth, depth = depth + 1)
 
+    # Random mutation
     def mutation(self):
-        if random() < PROB_MUTATION: # mutate at this node
+        if random() < PROB_MUTATION:
             self.random_tree(grow = True, max_depth = 2)
         elif self.left: self.left.mutation()
         elif self.right: self.right.mutation() 
+    
+    # Crossover 2 trees at random nodes
+    def crossover(self, other):
+        # deep copy first parent
+        offsping = deepcopy(self)
+        # reintialise tree data
+        offsping.fitness = -inf
+        offsping.regression_values = []
+        offsping.regression_hash = None
 
-    def size(self): # tree size in nodes
+        if random() < XO_RATE:
+            second = other.scan_tree([randint(1, other.size())], None) # 2nd random subtree
+            offsping.scan_tree([randint(1, offsping.size())], second) # 2nd subtree "glued" inside 1st tree
+        return offsping
+
+    # tree size in nodes
+    def size(self):
         if self.data in TERMINALS: return 1
         l = self.left.size()  if self.left  else 0
         r = self.right.size() if self.right else 0
@@ -77,10 +103,23 @@ class GPTree:
             if self.right and count[0] > 1: ret = self.right.scan_tree(count, second)  
             return ret
 
-    def crossover(self, other): # xo 2 trees at random nodes
-        if random() < XO_RATE:
-            second = other.scan_tree([randint(1, other.size())], None) # 2nd random subtree
-            self.scan_tree([randint(1, self.size())], second) # 2nd subtree "glued" inside 1st tree
+    # Equivalent infix expression
+    def infix_expression(self):
+        exp = ''
+        if self.data in FUNCTIONS:
+            exp += '('
+
+        if self.left:
+            exp += self.left.infix_expression()
+        exp += str(self.data if self.data in TERMINALS else FUNCTION_SYM[self.data.__name__])
+        if self.right:
+            exp += self.right.infix_expression()
+        
+        if self.data in FUNCTIONS:
+            exp += ')'
+
+        return exp
+
 
     def draw(self, dot, count): # dot & count are lists in order to pass "by reference" 
         node_name = str(count[0])
@@ -101,21 +140,3 @@ class GPTree:
         self.draw(dot, count)
         Source(dot[0], filename = fname + ".gv", format="png").render()
         display(Image(filename = fname + ".gv.png"))
-
-
-    def infix_expression(self):
-
-        exp = ''
-        if self.data in FUNCTIONS:
-            exp += '('
-
-        if self.left:
-            exp += self.left.infix_expression()
-        exp += str(self.data if self.data in TERMINALS else FUNCTION_SYM[self.data.__name__])
-        if self.right:
-            exp += self.right.infix_expression()
-        
-        if self.data in FUNCTIONS:
-            exp += ')'
-
-        return exp
