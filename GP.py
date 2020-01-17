@@ -20,17 +20,24 @@ class GP:
         self.population  = pop
 
     # Randomely initialise population
-    def init_population(self): # ramped half-and-half
+    # ramped half-and-half
+    def init_population(self):
         self.population = []
         for md in range(3, MAX_DEPTH + 1):
-            for i in range(int(POP_SIZE/6)):
+            for i in range(int(POP_SIZE/2)):
                 t = GPTree()
                 t.random_tree(grow = True, max_depth = md) # grow
                 self.population.append(t) 
-            for i in range(int(POP_SIZE/6)):
+            for i in range(int(POP_SIZE/2)):
                 t = GPTree()
                 t.random_tree(grow = False, max_depth = md) # full
                 self.population.append(t) 
+        # evaluate population
+        for ind in self.population:
+            fitness(ind, executable, instances)
+        # sort population
+        self.population.sort(key=lambda x: x.fitness, reverse=True)
+        self.population = self.population[:POP_SIZE]
 
 
     # Tournament selection
@@ -41,6 +48,23 @@ class GP:
         return deepcopy(self.population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
 
 
+    # string representation of GP population
+    def __str__(self):
+        i = 1
+        s = ''
+        for program in self.population:
+            exp = program.infix_expression()
+            s = s + '#'+'%2d' %i
+            s = s + ' : F=%2.2f' %program.fitness
+            s = s + ' | C=%2d' %program.size()
+            s = s + ' | EXP=' + str(simplify(exp))
+            s = s + ' | {R}=' + str(['%.2f' %val for val in program.regression_values])
+            s = s + ' | HASH=' + str(hash(str(program.regression_values))) + '\n'
+            #print('              ->',program.fitness_history)
+            i = i+1
+        return s
+
+
     # Evolve population
     def evolution(self):
 
@@ -48,23 +72,17 @@ class GP:
         # initialisation
         #==========================================================
         # generate initial population
+        print('Initial population:')
         self.init_population()
-        '''
-        best_program = None
-        best_gen = 0
-        best_fitness = -1e20
         '''
         # evaluate population
         for ind in self.population:
             fitness(ind, executable, instances)
         # sort population
         self.population.sort(key=lambda x: x.fitness, reverse=True)
+        '''
         # DEB: print population
-        i=1
-        for program in self.population:
-            exp = program.infix_expression()
-            print(i,'>>',program.fitness, ":", simplify(exp))
-            i=i+1
+        print(self)
         print('--------------------------------')
         #==========================================================
 
@@ -84,11 +102,33 @@ class GP:
                 # mate and mutate
                 offspring = parent1.crossover(parent2)
                 offspring.mutation()
+                # evaluate
+                fitness(offspring, executable, instances)
                 # add to the new stack of trees
                 new_trees.append(offspring)
 
             # replacement (replace ~75%)
-            self.population[POP_SIZE-GEN_POP_SIZE:] = new_trees
+            #self.population[POP_SIZE-GEN_POP_SIZE:] = new_trees
+
+            # replacement & bloat control
+            k = -1
+            for i in range(GEN_POP_SIZE):
+                dropped = False
+                for j in range(POP_SIZE):
+                    if ( new_trees[i].regression_hash == self.population[j].regression_hash ):
+                        if ( new_trees[i].size() < self.population[j].size() ):
+                            self.population[j] = new_trees[i]
+                            print('[REPLACE] + ')
+                        print('[DROP]>>', self.population[j].regression_hash, ' & ', new_trees[i].regression_hash )
+                        dropped = True
+                        break
+                if (not dropped):
+                    self.population[k] = new_trees[i]
+                    k = k-1
+
+            #self.population[POP_SIZE-len(new_trees):] = new_trees
+
+
 
             # population evaluation
             for ind in self.population:
@@ -105,12 +145,7 @@ class GP:
             '''
 
             # DEB: print population
-            i = 1
-            for program in self.population:
-                exp = program.infix_expression()
-                print('#'+str(i)+' : F=%.2f' %program.fitness, ' | ', simplify(exp), '| {R}=', ['%.2f' %val for val in program.regression_values],'#', hash(str(program.regression_values)))
-                #print('              ->',program.fitness_history)
-                i = i+1
+            print(self)
             print('--------------------------------')
         #==========================================================
 

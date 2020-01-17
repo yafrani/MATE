@@ -146,3 +146,4 @@ class GPTree:
         self.draw(dot, count)
         Source(dot[0], filename = fname + ".gv", format="png").render()
         display(Image(filename = fname + ".gv.png"))
+
