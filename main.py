@@ -90,9 +90,9 @@ best_program = gp.evolution()
 #==========================================================
 #best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
 
-fitnesses = [fitness(ind, executable, instances) for ind in gp.population]
-best_program2 = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
-exp = best_program2.infix_expression()
+fitnesses = [evaluate(ind, executable, instances) for ind in gp.population]
+best_program = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
+exp = best_program.infix_expression()
 [exec("%s = %d" % (F,2)) for F in FEATURES]
 #SIZE = symbols(' '.join(FEATURES))
 sexp = simplify(exp)
