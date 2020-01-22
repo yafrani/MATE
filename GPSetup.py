@@ -1,4 +1,5 @@
 from math import inf
+import datetime
 
 # GP parameters
 GENERATIONS     = 10                   # maximal number of generations to evolve programs
@@ -57,3 +58,6 @@ with open('srt_parameters.txt', 'r') as file:
 references = {}
 for inst in instances:
     references[inst[0]] = -inf
+
+# date and time
+dt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")

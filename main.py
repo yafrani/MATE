@@ -22,6 +22,9 @@ import platform
 # init internal state of random number generator
 seed()
 
+
+#==========================================================
+# Problem description
 #==========================================================
 print('=============================================')
 print('Parameters:')
@@ -88,14 +91,16 @@ best_program = gp.evolution()
 #==========================================================
 # save best program and simplify
 #==========================================================
-#best_program.draw_tree("best_program", "\nbest gen: " + str(best_gen) + " | fitness: " + str(best_fitness))
-
-fitnesses = [evaluate(ind, executable, instances) for ind in gp.population]
-best_program = deepcopy(gp.population[fitnesses.index(max(fitnesses))])
+fitnesses = [evaluate(ind) for ind in gp.population]
+best_program = deepcopy( gp.population[fitnesses.index(max(fitnesses))] )
 exp = best_program.infix_expression()
 [exec("%s = %d" % (F,2)) for F in FEATURES]
-#SIZE = symbols(' '.join(FEATURES))
 sexp = simplify(exp)
 print('Final expression:', exp)
 print('Final simplified expression:', sexp)
+#==========================================================
+
+result_pop = open("./output/result_pop-" + dt + ".txt","w+")
+result_pop.write(str(gp)+'\n')
+result_pop.close()
 #==========================================================

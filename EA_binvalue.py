@@ -10,7 +10,7 @@
 # - param: mutation rate
 #
 # EXAMPLE:
-# - python3 RLS_binvalue.py 10 0.5 1
+# - python3 EA_binvalue.py 10 0.5 1
 #
 # number of iterations is set to size*log(size) # try with n^2
 ################################################################################
@@ -31,7 +31,6 @@ if (deb): print("Instance: leading ones", instance)
 size = int(instance)
 
 nb_iter = ceil(size*log(size))
-#nb_iter = ceil(size*size)
 
 if (mut_rate>1 or mut_rate<0):
     print("-1")

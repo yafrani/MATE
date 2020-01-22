@@ -10,7 +10,7 @@
 # - param: mutation rate
 #
 # EXAMPLE:
-# - python3 randsearch_mut.py 10 0.5 1
+# - python3 EA_onemax.py 10 0.5 1
 #
 # number of iterations is set to size*log(size)
 ################################################################################

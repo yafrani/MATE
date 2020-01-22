@@ -7,9 +7,11 @@ import GPSetup
 
 import subprocess
 import random
+import io
 
-import platform
 from sympy import simplify, symbols
+
+#import platform
 #print(platform.system())
 
 
@@ -18,6 +20,7 @@ class GP:
 
     def __init__(self, pop = None):
         self.population  = pop
+
 
     # Randomely initialise population
     # ramped half-and-half
@@ -34,7 +37,7 @@ class GP:
                 self.population.append(t) 
         # evaluate population
         for ind in self.population:
-            evaluate(ind, executable, instances)
+            evaluate(ind)
         # sort population
         self.population.sort(key=lambda x: x.fitness, reverse=True)
         self.population = self.population[:POP_SIZE]
@@ -48,7 +51,7 @@ class GP:
         return deepcopy(self.population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
 
 
-    # string representation of GP population
+    # String representation of GP population
     def __str__(self):
         i = 1
         s = ''
@@ -74,13 +77,6 @@ class GP:
         # generate initial population
         print('Initial population:')
         self.init_population()
-        '''
-        # evaluate population
-        for ind in self.population:
-            evaluate(ind, executable, instances)
-        # sort population
-        self.population.sort(key=lambda x: x.fitness, reverse=True)
-        '''
         # DEB: print population
         print(self)
         print('--------------------------------')
@@ -88,9 +84,29 @@ class GP:
 
 
         #==========================================================
+        # log files
+        #==========================================================
+        log_bloat = open("./output/log_bloat-" + dt + ".csv","w+")
+        log_ref   = open("./output/log_ref-" +   dt + ".csv","w+")
+        # log header
+        log_bloat.write('Generation Old_size New_size\n')
+        log_bloat.flush()
+        for inst in instances:
+            log_ref.write(inst[0]+' ')
+        log_ref.write('\n')
+        #==========================================================
+
+
+        #==========================================================
         # evolve programs
         #==========================================================
         for gen in range(GENERATIONS):
+
+            for ref in references.values():
+                log_ref.write(str(ref)+' ')
+            log_ref.write('\n')
+            log_ref.flush()
+
             print('GEN:', gen+1)
 
             # generate a new population of same size
@@ -103,18 +119,30 @@ class GP:
                 offspring = parent1.crossover(parent2)
                 offspring.mutation()
                 # evaluate
-                evaluate(offspring, executable, instances)
+                evaluate(offspring)
                 # add to the new stack of trees
                 new_trees.append(offspring)
 
             # replacement & bloat control
             k = -1
             for i in range(GEN_POP_SIZE):
+                tree_size_new = new_trees[i].size()
                 dropped = False
                 for j in range(POP_SIZE):
+                    tree_size_current = self.population[j].size()
+
+                    # if the tress represent the same expression
                     if ( new_trees[i].regression_hash == self.population[j].regression_hash ):
-                        if ( new_trees[i].size() < self.population[j].size() ):
-                            print('[REPLACE] >> ', new_trees[i].size(), ' => ', self.population[j].size(), end='')
+                        # if the new tree is less complex
+                        if ( tree_size_new < tree_size_current ):
+                            
+                            # debug
+                            print('[REPLACE] >> ', tree_size_current, ' ==> ', tree_size_new, '|', end='')
+                            
+                            # save log
+                            log_bloat.write(str(gen+1)+' '+str(tree_size_current)+' '+str(tree_size_new)+' '+ new_trees[i].infix_expression() +'\n')
+                            log_bloat.flush()
+
                             self.population[j] = new_trees[i]
                             #print('[REPLACE] + ', simplify(new_trees[i].infix_expression()),' | ', simplify(self.population[j].infix_expression()), end='')
 
@@ -125,13 +153,10 @@ class GP:
                     self.population[k] = new_trees[i]
                     k = k-1
 
-            #self.population[POP_SIZE-len(new_trees):] = new_trees
-
-
 
             # population evaluation
             for ind in self.population:
-                evaluate(ind, executable, instances)
+                evaluate(ind)
 
             self.population.sort(key=lambda x: x.fitness, reverse=True)
 
@@ -139,12 +164,13 @@ class GP:
             print(self)
             print('--------------------------------')
         #==========================================================
-
+        log_bloat.close()
+        log_ref.close()
 
 
 
 # Evaluation function
-def evaluate(tree, executable, instances):
+def evaluate(tree):
 
     global references
 
@@ -157,7 +183,7 @@ def evaluate(tree, executable, instances):
     # run target algorithm for each instance
     for inst in instances:
         # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-        param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 2)
+        param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
         tree.regression_values.append(param_value)
 
         # execute target algorithm (executable) using the numerical parameter value for each instance
@@ -172,9 +198,6 @@ def evaluate(tree, executable, instances):
     # save obtained score in fitness history
     tree.fitness_history.append(scores)
 
-    # print(tree.fitness_history)
-    # print([x for x in references.values()])
-    
     # average over all instances at each previous generation
     norm_fitness_history = []
     for f in tree.fitness_history:
@@ -188,42 +211,3 @@ def evaluate(tree, executable, instances):
     tree.regression_hash = hash(frozenset(tree.regression_values))
 
     return tree.fitness
-
-
-
-
-
-
-
-
-
-def fitness2(tree, executable, instances):
-    #print(  str(tree.compute_tree(float(instances[0][1])))  )
-    #for inst in instances: print('--->>',[float(i) for i in inst[1:]])
-
-    scores = [subprocess.run(executable.split()+[inst[0], str( tree.compute_tree( [float(i) for i in inst[1:]] ) )], 
-        stdout = subprocess.PIPE).stdout.decode('utf-8') for inst in instances]
-    avg_score = mean( list(map(int, scores)) )
-    return avg_score
-
-
-def fitness3(tree, executable, instances):
-
-    # create array containing tree scores for each instances
-    scores = []
-    for inst in instances:
-        # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-        param_value = tree.compute_tree( [float(i) for i in inst[1:]] )
-
-        # execute target algorithm (executable) using the numerical parameter value for each instance
-        # TODO: if stochastic, repeat k times
-        scores.append( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
-
-    # calculate the final score by averaging the obtained scores for each instance
-    avg_score = mean( list(map(float, scores)) )
-
-    return avg_score
-
-
-
-
