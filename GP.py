@@ -9,6 +9,9 @@ import GPSetup
 import subprocess
 import random
 import io
+import timeit
+
+from multiprocessing import Pool
 
 from sympy import simplify, symbols
 
@@ -144,12 +147,8 @@ class GP:
                     tree_size_current = self.population[j].size()
 
                     # if the tress represent the same expression
-                    # if ( new_trees[i].regression_hash == self.population[j].regression_hash ):
                     current_scores = normalise_scores(self.population[j])
                     x, pval = stats.ranksums(new_scores, current_scores)
-                    #print('>>',new_scores, current_scores, pval)
-                    # if pval >= 0.0079:
-                    #     print('GOOD!!!')
                     if (pval >= 0.01 or new_trees[i].regression_hash == self.population[j].regression_hash):
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):
@@ -187,9 +186,7 @@ class GP:
 # Evaluation function
 def evaluate(tree):
     if len(tree.fitness_history)>=5:
-        # print('skip')
         return None
-    # print('OKAY')
 
     global references
 
@@ -202,30 +199,23 @@ def evaluate(tree):
         tree.regression_values.append(param_value)
 
     # run target algorithm for each instance
+
+    #start = timeit.default_timer()
+    with Pool(5) as p:
+        tree.fitness_history = p.map(run_target, [tree, tree, tree, tree, tree])
+    #stop = timeit.default_timer()
+    #print('>>>>>>>>>>>>>>>>> Para time: ', stop - start)  
+
+    '''
+    start = timeit.default_timer()
     for k in range(5):
-        scores = {}
+        tree.fitness_history.append(run_target(tree))
+    stop = timeit.default_timer()
+    print('>>>>>>>>>>>>>>>>> Loop time: ', stop - start)  
+    '''
 
-        for inst in instances:
-            # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-            param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
-
-            # execute target algorithm (executable) using the numerical parameter value for each instance
-            # QUESTION: if stochastic: repeat k times vs. update on the fly (current)?
-            inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
-            scores[inst[0]] = inst_score
-            
-            # update references if a better one was found using GP
-            if (inst_score > references[inst[0]]):
-                references[inst[0]] = inst_score
-
-        # save obtained score in fitness history
-        tree.fitness_history.append(scores)
-
-    # average over all instances at each previous generation
-    norm_fitness_history = []
-    for f in tree.fitness_history:
-        # "re-normalise", average & add to history list
-        norm_fitness_history.append( mean( [f[inst[0]]/references[inst[0]] for inst in instances] ) )
+    # normalise fitness scores using references
+    norm_fitness_history = normalise_scores(tree)
 
     # calculate final tree fitness by averaging fitness history list
     tree.fitness = mean(norm_fitness_history)
@@ -236,7 +226,7 @@ def evaluate(tree):
     return tree.fitness
 
 
-
+# Normalise fitness scores using references
 def normalise_scores(tree):
 
     # average over all instances at each previous generation
@@ -248,3 +238,22 @@ def normalise_scores(tree):
 
     # calculate final tree fitness by averaging fitness history list
     return norm_fitness_history
+
+
+# Run target algorithm for each instance
+def run_target(tree):
+    scores = {}
+    for inst in instances:
+        # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
+        param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
+
+        # execute target algorithm (executable) using the numerical parameter value for each instance
+        # QUESTION: if stochastic: repeat k times vs. update on the fly (current)?
+        inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+        scores[inst[0]] = inst_score
+        
+        # update references if a better one was found using GP
+        if (inst_score > references[inst[0]]):
+            references[inst[0]] = inst_score
+
+    return scores
