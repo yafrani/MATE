@@ -1,4 +1,3 @@
-#from random import random, randint, seed
 from statistics import mean
 from copy import deepcopy
 from scipy import stats
@@ -14,48 +13,38 @@ import timeit
 from multiprocessing import Pool
 
 from sympy import simplify, symbols
-
 #import platform
 #print(platform.system())
+
+from CGP import *
 
 
 # GP population
 class GP:
 
-    def __init__(self, pop = None):
-        self.population  = pop
+
+    # reference fitnesses to be used as upper bounds
+    # each instance has a reference
+    # references are parameter-independent
+    references = {}
+    for inst in instances:
+        references[inst[0]] = -inf
+
+    # references values for parameters for each instance
+    ref_param_values = {}
 
 
-    # Randomely initialise population
-    # ramped half-and-half
-    def init_population(self):
-        self.population = []
-        for md in range(3, MAX_DEPTH + 1):
-            for i in range(int(POP_SIZE/2)):
-                t = GPTree()
-                t.random_tree(grow = True, max_depth = md) # grow
-                self.population.append(t) 
-            for i in range(int(POP_SIZE/2)):
-                t = GPTree()
-                t.random_tree(grow = False, max_depth = md) # full
-                self.population.append(t) 
-        # evaluate population
-        for ind in self.population:
-            evaluate(ind)
-        # sort population
-        self.population.sort(key=lambda x: x.fitness, reverse=True)
-        self.population = self.population[:POP_SIZE]
+    ##########################################################################
+    # Construct GP instance for one parameter
+    ##########################################################################
+    def __init__(self, population = None, param_id = 0):
+        self.population  = population
+        self.param_id = param_id
 
 
-    # Tournament selection
-    def selection(self): # select one tree using tournament selection
-        #return deepcopy(population[randint(0, len(population)-1)]) 
-        tournament = [randint(0, len(self.population)-1) for i in range(TOURNAMENT_SIZE)] # select tournament contenders
-        tournament_fitnesses = [self.population[tournament[i]].fitness for i in range(TOURNAMENT_SIZE)]
-        return deepcopy(self.population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
-
-
+    ##########################################################################
     # String representation of GP population
+    ##########################################################################
     def __str__(self):
         i = 1
         s = ''
@@ -74,15 +63,62 @@ class GP:
         return s
 
 
-    # Evolve population
-    def evolution(self):
+    ##########################################################################
+    # Randomely initialise population
+    # ramped half-and-half
+    ##########################################################################
+    def init_population(self):
+        self.population = []
+        for md in range(3, MAX_DEPTH + 1):
+            for i in range(int(POP_SIZE/2)):
+                t = GPTree()
+                t.random_tree(grow = True, max_depth = md) # grow
+                self.population.append(t) 
+            for i in range(int(POP_SIZE/2)):
+                t = GPTree()
+                t.random_tree(grow = False, max_depth = md) # full
+                self.population.append(t) 
 
+        # evaluate population
+        for ind in self.population:
+            self.evaluate(ind)
+
+        # sort population
+        self.population.sort(key=lambda x: x.fitness, reverse=True)
+        self.population = self.population[:POP_SIZE]
+
+
+    ##########################################################################
+    # Tournament selection
+    ##########################################################################
+    def selection(self): # select one tree using tournament selection
+        #return deepcopy(population[randint(0, len(population)-1)]) 
+        tournament = [randint(0, len(self.population)-1) for i in range(TOURNAMENT_SIZE)] # select tournament contenders
+        tournament_fitnesses = [self.population[tournament[i]].fitness for i in range(TOURNAMENT_SIZE)]
+        return deepcopy(self.population[tournament[tournament_fitnesses.index(max(tournament_fitnesses))]]) 
+
+
+    ##########################################################################
+    # Evolve population
+    ##########################################################################
+    def evolution(self):
         #==========================================================
         # initialisation
         #==========================================================
         # generate initial population
         print('Initial population:')
-        self.init_population()
+        if self.population==None:
+            self.init_population()
+
+        # Re-evaluate population:
+        # because the other parameters might have changed
+        for ind in self.population:
+            ind.fitness_history = []
+            ind.fitness = -inf
+            ind.regression_values = {}
+            ind.regression_hash = None
+
+
         # DEB: print population
         print(self)
         print('--------------------------------')
@@ -108,12 +144,15 @@ class GP:
         #==========================================================
         for gen in range(GENERATIONS):
 
-            for ref in references.values():
+            for ref in GP.references.values():
                 log_ref.write(str(ref)+' ')
             log_ref.write('\n')
             log_ref.flush()
 
-            print('GEN:', gen+1)
+            print('PARAM',self.param_id,'| GEN:', gen+1)
+            print('REF PARAM >>', GP.ref_param_values)
+            print('REF FITNE >>', GP.references)
+
 
             # generate a new population of same size
             new_trees = []
@@ -126,7 +165,7 @@ class GP:
                 offspring.mutation()
                 # evaluate
                 #for i in range(5):
-                evaluate(offspring)
+                self.evaluate(offspring)
                 # add to the new stack of trees
                 new_trees.append(offspring)
 
@@ -140,27 +179,27 @@ class GP:
             k = -1
             for i in range(GEN_POP_SIZE):
                 tree_size_new = new_trees[i].size()
-                new_scores = normalise_scores(new_trees[i])
+                new_scores = self.normalise_scores(new_trees[i])
 
                 dropped = False
                 for j in range(POP_SIZE):
                     tree_size_current = self.population[j].size()
 
                     # if the tress represent the same expression
-                    current_scores = normalise_scores(self.population[j])
+                    current_scores = self.normalise_scores(self.population[j])
                     x, pval = stats.ranksums(new_scores, current_scores)
                     if (pval >= 0.01 or new_trees[i].regression_hash == self.population[j].regression_hash):
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):
                             # debug
-                            print('[REPLACE] >> ', tree_size_current,'|',self.population[j].fitness, ' ==> ', tree_size_new, '|', new_trees[i].fitness , ' ## ', end='')
-                            print('  >>', new_scores, current_scores, pval)
+                            #print('[REPLACE] >> ', tree_size_current,'|',self.population[j].fitness, ' ==> ', tree_size_new, '|', new_trees[i].fitness , ' ## ', end='')
+                            #print('  >>', new_scores, current_scores, pval)
                             # save log
                             log_bloat.write(str(gen+1)+' '+str(tree_size_current)+' '+str(tree_size_new)+' '+ new_trees[i].infix_expression() +'\n')
                             log_bloat.flush()
                             self.population[j] = new_trees[i]
 
-                        print('[DROP] >> ', self.population[j].regression_hash)
+                        #print('[DROP] >> ', self.population[j].regression_hash)
                         dropped = True
                         break
                 if (not dropped):
@@ -170,9 +209,14 @@ class GP:
 
             # population evaluation
             for ind in self.population:
-                evaluate(ind)
+                self.evaluate(ind)
 
+            # soft population based on fitness
             self.population.sort(key=lambda x: x.fitness, reverse=True)
+
+            # update reference parameter values
+            for inst in instances:
+                GP.ref_param_values[inst[0]][self.param_id] = str(self.population[0].regression_values[inst[0]])
 
             # DEB: print population
             print(self)
@@ -182,78 +226,92 @@ class GP:
         log_ref.close()
 
 
+    ##########################################################################
+    # Evaluation function
+    ##########################################################################
+    def evaluate(self, tree):
+        if len(tree.fitness_history)>=5:
+            return None
 
-# Evaluation function
-def evaluate(tree):
-    if len(tree.fitness_history)>=5:
-        return None
-
-    global references
-
-    # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-    # empty list of regression values
-    tree.regression_values = []
-    for inst in instances:
-        param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
-        # TODO: use dictionary to store
-        tree.regression_values.append(param_value)
-
-    # run target algorithm for each instance
-
-    #start = timeit.default_timer()
-    with Pool(5) as p:
-        tree.fitness_history = p.map(run_target, [tree, tree, tree, tree, tree])
-    #stop = timeit.default_timer()
-    #print('>>>>>>>>>>>>>>>>> Para time: ', stop - start)  
-
-    '''
-    start = timeit.default_timer()
-    for k in range(5):
-        tree.fitness_history.append(run_target(tree))
-    stop = timeit.default_timer()
-    print('>>>>>>>>>>>>>>>>> Loop time: ', stop - start)  
-    '''
-
-    # normalise fitness scores using references
-    norm_fitness_history = normalise_scores(tree)
-
-    # calculate final tree fitness by averaging fitness history list
-    tree.fitness = mean(norm_fitness_history)
-
-    # calculate hash for regression values as a "unique" ID
-    tree.regression_hash = hash(frozenset(tree.regression_values))
-
-    return tree.fitness
-
-
-# Normalise fitness scores using references
-def normalise_scores(tree):
-
-    # average over all instances at each previous generation
-    norm_fitness_history = []
-
-    for f in tree.fitness_history:
-        # "re-normalise", average & add to history list
-        norm_fitness_history.append( round(mean( [f[inst[0]]/references[inst[0]] for inst in instances] ), 4) )
-
-    # calculate final tree fitness by averaging fitness history list
-    return norm_fitness_history
-
-
-# Run target algorithm for each instance
-def run_target(tree):
-    scores = {}
-    for inst in instances:
         # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-        param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
+        # empty list of regression values
+        #tree.regression_values = []
+        tree.regression_values = {}
+        for inst in instances:
+            param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
+            # TODO: use dictionary to store
+            #tree.regression_values.append(param_value)
+            tree.regression_values[inst[0]] = param_value
 
-        # execute target algorithm (executable) using the numerical parameter value for each instance
-        # QUESTION: if stochastic: repeat k times vs. update on the fly (current)?
-        inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
-        scores[inst[0]] = inst_score
-        
+        # run target algorithm for each instance
+        #start = timeit.default_timer()
+        with Pool(10) as p:
+            tree.fitness_history = p.map(self.run_target, [tree]*10)
+
         # update references if a better one was found using GP
-        if (inst_score > references[inst[0]]):
-            references[inst[0]] = inst_score
+        for i in range(len(tree.fitness_history)):
+            for inst in instances:
+                if (tree.fitness_history[i][inst[0]] > GP.references[inst[0]]):
+                    GP.references[inst[0]] = tree.fitness_history[i][inst[0]]
+                    #GP.ref_param_values[inst[0]][self.param_id] = str(tree.regression_values[inst[0]])
+                    #GP.ref_param_values[inst[0]][self.param_id] = str(param_value)
+                    print('NEW REF (p_',self.param_id,'):',GP.references)
+                    #print('yaaaaaaaaaay!!',self.param_id,' A:',GP.ref_param_values)
 
-    return scores
+        #for k in range(5):
+        #    tree.fitness_history.append(self.run_target(tree))
+
+        # normalise fitness scores using references
+        norm_fitness_history = self.normalise_scores(tree)
+
+        # calculate final tree fitness by averaging fitness history list
+        tree.fitness = mean(norm_fitness_history)
+
+        # calculate hash for regression values as a "unique" ID
+        tree.regression_hash = hash(frozenset(tree.regression_values.items()))
+
+        return tree.fitness
+
+
+    ##########################################################################
+    # Normalise fitness scores using references
+    ##########################################################################
+    def normalise_scores(self, tree):
+
+        # average over all instances at each previous generation
+        norm_fitness_history = []
+
+        for f in tree.fitness_history:
+            # "re-normalise", average & add to history list
+            norm_fitness_history.append( round(mean( [f[inst[0]]/GP.references[inst[0]] for inst in instances] ), 4) )
+
+        # calculate final tree fitness by averaging fitness history list
+        return norm_fitness_history
+
+
+    ##########################################################################
+    # Run target algorithm for each instance
+    ##########################################################################
+    def run_target(self, tree):
+
+        scores = {}
+        for inst in instances:
+            # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
+            param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
+
+            # execute target algorithm (executable) using the numerical parameter value for each instance
+            tmp = GP.ref_param_values[inst[0]][self.param_id]
+            GP.ref_param_values[inst[0]][self.param_id] = str(param_value)
+            scores[inst[0]] = run_target_static(inst[0], GP.ref_param_values[inst[0]])
+            #scores[inst[0]] = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+            GP.ref_param_values[inst[0]][self.param_id] = tmp
+
+        return scores
+
+
+
+##########################################################################
+# Run target algorithm for one instance with static parameter values
+##########################################################################
+def run_target_static(inst_name, param_values):
+    return float( subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8') )

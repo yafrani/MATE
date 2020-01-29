@@ -20,7 +20,8 @@ class GPTree:
         self.fitness = -inf
 
         # regression values data (=parameter values)
-        self.regression_values = []
+        #self.regression_values = []
+        self.regression_values = {}
         self.regression_hash = None
 
 

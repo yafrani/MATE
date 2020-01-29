@@ -13,11 +13,12 @@ from graphviz import Digraph, Source
 from sympy import simplify, symbols
 
 from utils import *
-from GP import *
+from CGP import *
 from GPSetup import *
 
-import platform
+#import platform
 #print(platform.system()=='Linux')
+
 
 # init internal state of random number generator
 seed()
@@ -46,61 +47,94 @@ print('=============================================')
 #==========================================================
 
 
-#==========================================================
-# Tune for parameter #1
-#==========================================================
-parameter = parameters[0]
-
-
-#==========================================================
-# Generate references fitnesses for each instance
-# and select best
-# TODO: generalise to multiple parameters (e.g. grid search)
-#==========================================================
-# parameter to 
-param_name = parameter[0]
-lbound = int(parameter[1]) if len(parameter)>=3 else -999
-rbound = int(parameter[2]) if len(parameter)>=3 else +999
-# calculate initial references
+# Initial parameter values
+# Use average of parameter interval
 for inst in instances:
-    for r in range(0, 10):
-        norm = (rbound+lbound)/10.0
-        step = (rbound-lbound)/10.0
-        # run with parameter
-        param_value = lbound + step*r + step/2
-        inst_score = float( subprocess.run(executable.split()+[inst[0], str( param_value )], stdout = subprocess.PIPE).stdout.decode('utf-8') )
+    GP.ref_param_values[inst[0]] = []
+    for parameter in parameters:
+        lbound = int(parameter[1]) if len(parameter)>=3 else -999
+        rbound = int(parameter[2]) if len(parameter)>=3 else +999
+        GP.ref_param_values[inst[0]].append( str((lbound+rbound)/2.0) )
 
-        if (inst_score > references[inst[0]]):
-            references[inst[0]] = inst_score
+print('>>>>>>',GP.ref_param_values)
 
-print('=============================================')
-print('Score references:')
-print('=============================================')
-for (inst, score) in references.items():
-    print(inst+':', score)
-print('=============================================')
+# Loop through all parameters (until EOF)
+nb_rep = 10
+for u in range(nb_rep):
+    for i in range(len(parameters)):
+
+        #==========================================================
+        # Tune for parameter #1
+        #==========================================================
+        parameter = parameters[i]
+
+
+        #==========================================================
+        # Generate references fitnesses for each instance
+        # and select best
+        # TODO: generalise to multiple parameters (e.g. grid search)
+        #==========================================================
+        # parameter to tune
+        nb_runs = 10.0
+        param_name = parameter[0]
+        lbound = int(parameter[1]) if len(parameter)>=3 else -999
+        rbound = int(parameter[2]) if len(parameter)>=3 else +999
+        step = (rbound-lbound)/nb_runs
+        # calculate initial references
+        for inst in instances:
+            for r in range(0, round(nb_runs)):
+                # run with parameter
+                param_value = lbound + step*r + step/2.0
+                #print('==',param_value)
+
+                tmp = GP.ref_param_values[inst[0]][i]
+                GP.ref_param_values[inst[0]][i] = str(param_value)
+                inst_score = run_target_static(inst[0], GP.ref_param_values[inst[0]])
+
+                # if score is better, update reference
+                if (inst_score > GP.references[inst[0]]):
+                    #print('YAAAY',param_value)
+                    GP.references[inst[0]] = inst_score
+                else:
+                    GP.ref_param_values[inst[0]][i] = tmp
+
+        print(GP.ref_param_values)
+
+        print('=============================================')
+        print('Score references:')
+        print('=============================================')
+        for (inst, score) in GP.references.items():
+            print(inst+':', score)
+        print('=============================================')
+#exit()
+
 
 
 #==========================================================
 # GP evolution
 #==========================================================
-gp = GP()
-best_program = gp.evolution()
+'''
+class CGP:
+    def __init__:
+        gp = []
+        for i in range(len(parameters)):
+            gp.append(GP())
 
+    def coevolution():
+        nb_rep = 2
+        for u in range(nb_rep):
+            for i in range(len(parameters)):
+                gp[i] = GP(population=gp[i].population, param_id=i)
+                gp[i].evolution()
+'''
+cgp = CGP()
+cgp.coevolution()
 
 #==========================================================
-# save best program and simplify
+# Store final population
 #==========================================================
-# fitnesses = [evaluate(ind) for ind in gp.population]
-# best_program = deepcopy( gp.population[fitnesses.index(max(fitnesses))] )
-# exp = best_program.infix_expression()
-# [exec("%s = %d" % (F,2)) for F in FEATURES]
-# sexp = simplify(exp)
-# print('Final expression:', exp)
-# print('Final simplified expression:', sexp)
-#==========================================================
-
-result_pop = open("./output/result_pop-" + dt + ".txt","w+")
-result_pop.write(str(gp)+'\n')
+result_pop = open("./output/result_pop-" + dt + ".txt", "w+")
+result_pop.write(str(cgp.gp) + '\n')
 result_pop.close()
 #==========================================================
+
