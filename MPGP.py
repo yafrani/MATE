@@ -3,7 +3,7 @@ from GPSetup import *
 
 
 # Coevolution GP
-class CGP:
+class MPGP:
     
     def __init__(self, gp = None):
         self.gp = []
@@ -13,10 +13,10 @@ class CGP:
 
     def coevolution(self):
 
-        nb_rep = 100
+        nb_rep = len(parameters)**2
         for u in range(nb_rep):
             print('=======================================================')
-            print('CGP GEN:', nb_rep)
+            print('CGP GEN:', u)
             print('=======================================================')
             for i in range(len(parameters)):
                 self.gp[i] = GP(population = self.gp[i].population, param_id = i)

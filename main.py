@@ -13,7 +13,7 @@ from graphviz import Digraph, Source
 from sympy import simplify, symbols
 
 from utils import *
-from CGP import *
+from MPGP import *
 from GPSetup import *
 
 #import platform
@@ -59,7 +59,7 @@ for inst in instances:
 print('>>>>>>',GP.ref_param_values)
 
 # Loop through all parameters (until EOF)
-nb_rep = 10
+nb_rep = 1
 for u in range(nb_rep):
     for i in range(len(parameters)):
 
@@ -113,22 +113,9 @@ for u in range(nb_rep):
 #==========================================================
 # GP evolution
 #==========================================================
-'''
-class CGP:
-    def __init__:
-        gp = []
-        for i in range(len(parameters)):
-            gp.append(GP())
-
-    def coevolution():
-        nb_rep = 2
-        for u in range(nb_rep):
-            for i in range(len(parameters)):
-                gp[i] = GP(population=gp[i].population, param_id=i)
-                gp[i].evolution()
-'''
-cgp = CGP()
+cgp = MPGP()
 cgp.coevolution()
+
 
 #==========================================================
 # Store final population

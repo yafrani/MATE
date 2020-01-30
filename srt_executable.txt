@@ -1,1 +1,0 @@
-python3 EA_onemax_dummy.py

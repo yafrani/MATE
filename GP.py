@@ -16,7 +16,7 @@ from sympy import simplify, symbols
 #import platform
 #print(platform.system())
 
-from CGP import *
+from MPGP import *
 
 
 # GP population
@@ -55,8 +55,8 @@ class GP:
             s = s + ' | C=%2d' %program.size()
             s = s + " | FH="+str(len(program.fitness_history))
             s = s + ' | EXP=' + str(simplify(exp))
-            #s = s + ' | {R}=' + str(['%.2f' %val for val in program.regression_values])
-            #s = s + ' | HASH=' + str(hash(frozenset(program.regression_values)))
+            s = s + ' | {R}=' + str(['%.2f' %float(val) for val in program.regression_values.values()])
+            s = s + ' | HASH=' + str(hash(frozenset(program.regression_values.items())))
             s = s + '\n'
 
             i = i+1
@@ -73,11 +73,25 @@ class GP:
             for i in range(int(POP_SIZE/2)):
                 t = GPTree()
                 t.random_tree(grow = True, max_depth = md) # grow
-                self.population.append(t) 
+                
+                self.evaluation_reg(t)
+                print('AA>>', t.regression_hash, any(x.regression_hash == t.regression_hash for x in self.population) )
+                if any(x.regression_hash == t.regression_hash for x in self.population):
+                    md = md-1
+                else:
+                    self.population.append(t) 
+
             for i in range(int(POP_SIZE/2)):
                 t = GPTree()
                 t.random_tree(grow = False, max_depth = md) # full
-                self.population.append(t) 
+
+                self.evaluation_reg(t)
+                print('AA>>', t.regression_hash, any(x.regression_hash == t.regression_hash for x in self.population) )
+
+                if any(x.regression_hash == t.regression_hash for x in self.population):
+                    md = md-1
+                else:
+                    self.population.append(t) 
 
         # evaluate population
         for ind in self.population:
@@ -115,8 +129,8 @@ class GP:
         for ind in self.population:
             ind.fitness_history = []
             ind.fitness = -inf
-            ind.regression_values = {}
-            ind.regression_hash = None
+            #ind.regression_values = {}
+            #ind.regression_hash = None
 
 
         # DEB: print population
@@ -230,23 +244,18 @@ class GP:
     # Evaluation function
     ##########################################################################
     def evaluate(self, tree):
-        if len(tree.fitness_history)>=5:
+        if len(tree.fitness_history)>=SAMPLE_RUNS:
             return None
 
         # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
         # empty list of regression values
         #tree.regression_values = []
-        tree.regression_values = {}
-        for inst in instances:
-            param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
-            # TODO: use dictionary to store
-            #tree.regression_values.append(param_value)
-            tree.regression_values[inst[0]] = param_value
+        self.evaluation_reg(tree)
 
         # run target algorithm for each instance
         #start = timeit.default_timer()
-        with Pool(10) as p:
-            tree.fitness_history = p.map(self.run_target, [tree]*10)
+        with Pool(SAMPLE_RUNS) as p:
+            tree.fitness_history = p.map(self.run_target, [tree]*SAMPLE_RUNS)
 
         # update references if a better one was found using GP
         for i in range(len(tree.fitness_history)):
@@ -267,10 +276,22 @@ class GP:
         # calculate final tree fitness by averaging fitness history list
         tree.fitness = mean(norm_fitness_history)
 
+        return tree.fitness
+
+
+    def evaluation_reg(self, tree):
+        # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
+        # empty list of regression values
+        #tree.regression_values = []
+        tree.regression_values = {}
+        for inst in instances:
+            param_value = tree.compute_tree( [float(i) for i in inst[1:]] )
+            # TODO: use dictionary to store
+            #tree.regression_values.append(param_value)
+            tree.regression_values[inst[0]] = param_value
+
         # calculate hash for regression values as a "unique" ID
         tree.regression_hash = hash(frozenset(tree.regression_values.items()))
-
-        return tree.fitness
 
 
     ##########################################################################
@@ -283,7 +304,7 @@ class GP:
 
         for f in tree.fitness_history:
             # "re-normalise", average & add to history list
-            norm_fitness_history.append( round(mean( [f[inst[0]]/GP.references[inst[0]] for inst in instances] ), 4) )
+            norm_fitness_history.append( mean( [f[inst[0]]/GP.references[inst[0]] for inst in instances] ) )
 
         # calculate final tree fitness by averaging fitness history list
         return norm_fitness_history
@@ -297,7 +318,7 @@ class GP:
         scores = {}
         for inst in instances:
             # evaluate tree using feature values (inst[1:]) to obtain the numerical parameter value
-            param_value = round(tree.compute_tree( [float(i) for i in inst[1:]] ), 4)
+            param_value = tree.compute_tree( [float(i) for i in inst[1:]] )
 
             # execute target algorithm (executable) using the numerical parameter value for each instance
             tmp = GP.ref_param_values[inst[0]][self.param_id]

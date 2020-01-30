@@ -257,7 +257,7 @@ def main(argv):
             fitlist=experiment[2]
             fsol=fitlist.pop()
             #print(alg)
-            print('Score:', fsol)
+            print(fsol)
             #print(experiment[0])
             results[alg].insert_expriment(experiment)
 
@@ -286,5 +286,5 @@ def main(argv):
 
     
 if __name__ == "__main__":
-    print(' '.join(sys.argv))
+    #print(' '.join(sys.argv))
     main(sys.argv[1:])
