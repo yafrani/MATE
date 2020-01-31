@@ -41,6 +41,10 @@ class GP:
         self.population  = population
         self.param_id = param_id
 
+        self.lbound = float(parameters[param_id][1]) if len(parameters[param_id])>=3 else -999
+        self.rbound = float(parameters[param_id][2]) if len(parameters[param_id])>=3 else +999
+
+
 
     ##########################################################################
     # String representation of GP population
@@ -70,28 +74,29 @@ class GP:
     def init_population(self):
         self.population = []
         for md in range(3, MAX_DEPTH + 1):
-            for i in range(int(POP_SIZE/2)):
+            i=0
+            while i < POP_SIZE:
                 t = GPTree()
-                t.random_tree(grow = True, max_depth = md) # grow
-                
+                if i<int(POP_SIZE/2):
+                    t.random_tree(grow = True, max_depth = md) # grow
+                else:
+                    t.random_tree(grow = False, max_depth = md) # full
+
+                # get param values
                 self.evaluation_reg(t)
-                print('AA>>', t.regression_hash, any(x.regression_hash == t.regression_hash for x in self.population) )
-                if any(x.regression_hash == t.regression_hash for x in self.population):
-                    md = md-1
+
+                # check if param is valid (inside [lbound,rbound])
+                valid = True
+                for x in t.regression_values.values():
+                    if x<self.lbound or x>self.rbound:
+                        valid = False
+                        break
+
+                if any(x.regression_hash == t.regression_hash for x in self.population) or not valid:
+                    i = i-1 #review
                 else:
                     self.population.append(t) 
-
-            for i in range(int(POP_SIZE/2)):
-                t = GPTree()
-                t.random_tree(grow = False, max_depth = md) # full
-
-                self.evaluation_reg(t)
-                print('AA>>', t.regression_hash, any(x.regression_hash == t.regression_hash for x in self.population) )
-
-                if any(x.regression_hash == t.regression_hash for x in self.population):
-                    md = md-1
-                else:
-                    self.population.append(t) 
+                i = i+1
 
         # evaluate population
         for ind in self.population:
@@ -123,14 +128,12 @@ class GP:
         print('Initial population:')
         if self.population==None:
             self.init_population()
-
-        # Re-evaluate population:
-        # because the other parameters might have changed
-        for ind in self.population:
-            ind.fitness_history = []
-            ind.fitness = -inf
-            #ind.regression_values = {}
-            #ind.regression_hash = None
+        else:
+            # Re-evaluate population:
+            # because the other parameters might have changed
+            for ind in self.population:
+                ind.fitness_history = []
+                ind.fitness = -inf
 
 
         # DEB: print population
@@ -171,7 +174,7 @@ class GP:
             # generate a new population of same size
             new_trees = []
 
-            for i in range(GEN_POP_SIZE or self.selectio):
+            for i in range(GEN_POP_SIZE):
                 parent1 = self.selection()
                 parent2 = self.selection()
                 # mate and mutate
@@ -201,17 +204,22 @@ class GP:
 
                     # if the tress represent the same expression
                     current_scores = self.normalise_scores(self.population[j])
-                    x, pval = stats.ranksums(new_scores, current_scores)
-                    if (pval >= 0.01 or new_trees[i].regression_hash == self.population[j].regression_hash):
+                    _, pval = stats.ranksums(new_scores, current_scores)
+
+                    new_exp = str(simplify(new_trees[i].infix_expression()))
+                    current_exp = str(simplify(self.population[j].infix_expression()))
+                    
+                    if (pval >= 0.01 or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
+                        print('>>', new_trees[i].regression_hash, new_exp, self.population[j].regression_hash, current_exp, pval)
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):
                             # debug
                             #print('[REPLACE] >> ', tree_size_current,'|',self.population[j].fitness, ' ==> ', tree_size_new, '|', new_trees[i].fitness , ' ## ', end='')
-                            #print('  >>', new_scores, current_scores, pval)
                             # save log
                             log_bloat.write(str(gen+1)+' '+str(tree_size_current)+' '+str(tree_size_new)+' '+ new_trees[i].infix_expression() +'\n')
                             log_bloat.flush()
                             self.population[j] = new_trees[i]
+                            #j = j-1
 
                         #print('[DROP] >> ', self.population[j].regression_hash)
                         dropped = True

@@ -52,8 +52,8 @@ print('=============================================')
 for inst in instances:
     GP.ref_param_values[inst[0]] = []
     for parameter in parameters:
-        lbound = int(parameter[1]) if len(parameter)>=3 else -999
-        rbound = int(parameter[2]) if len(parameter)>=3 else +999
+        lbound = float(parameter[1]) if len(parameter)>=3 else -999
+        rbound = float(parameter[2]) if len(parameter)>=3 else +999
         GP.ref_param_values[inst[0]].append( str((lbound+rbound)/2.0) )
 
 print('>>>>>>',GP.ref_param_values)
@@ -113,15 +113,24 @@ for u in range(nb_rep):
 #==========================================================
 # GP evolution
 #==========================================================
-cgp = MPGP()
-cgp.coevolution()
+pops = MPGP()
+pops.coevolution()
 
 
 #==========================================================
 # Store final population
 #==========================================================
 result_pop = open("./output/result_pop-" + dt + ".txt", "w+")
-result_pop.write(str(cgp.gp) + '\n')
+for i in range(len(parameters)):
+
+    #==========================================================
+    # Tune for parameter #1
+    #==========================================================
+    parameter = parameters[i]
+    result_pop.write('Parameter: ' + parameter[0] + '\n')
+    result_pop.write(str(pops.gp[i]) + '\n')
+    result_pop.write('==============================' + '\n')
+    result_pop.flush()
 result_pop.close()
 #==========================================================
 
