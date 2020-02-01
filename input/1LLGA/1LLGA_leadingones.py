@@ -8,18 +8,17 @@
 
 ################################################################################
 # DESC:
-# 1LLGA for binary value
+# 1LLGA for binary value - LL_static_02
 # 
 # USAGE:
 # ./randsearch.py <instance-name> <param>
-# - instance-name: one max size
-# - params: lambda1 - integer
-#			lambda2- integer
-#			lda- integer
-#			crossOverBias - float
+# - instance-name: leading ones size
+# - params: alpha - float
+#			beta- float
+#			
 #
 # EXAMPLE:
-# - python2 1LLGA_leadingones.py 10 4 4 3 0.3 1
+# - python2 1LLGA_leadingones.py 10 0.5 0.5 
 #
 # number of iterations is set to size*log(size) # try with n^2
 ################################################################################
@@ -112,13 +111,13 @@ def main(argv):
    
     #args = parser.parse_args()
     size=int(sys.argv[1])
-    lambda1=int(sys.argv[2])
-    lambda2=int(sys.argv[3])
-    lda=int(sys.argv[4])
-    cross_bias=float(sys.argv[5])
+    alpha=float(sys.argv[2])*10
+    beta=float(sys.argv[3])*10
+    lda=1 #lda- integer : n_offspring=1
+    #cross_bias=float(sys.argv[5])
     crossover_choice=1
     problem = "LeadingOnes"    
-    algorithm = ["LL_static"] #"['LL_static']"
+    algorithm = ["LL_static_02"] #"['LL_static']"
     it = 1
     steps = int(size)
     save = False
@@ -129,7 +128,7 @@ def main(argv):
     max_evaluation=ceil(size*log(size))
 
     deb = False
-    if (len(sys.argv)>6 and sys.argv[6]==str(1)):
+    if (len(sys.argv)>4 and sys.argv[4]==str(1)):
     	deb = True
 	if (deb):
 		print("Instance: leading ones", str(size))
@@ -198,9 +197,9 @@ def main(argv):
         LL_static_crossOverBias = cross_bias
 
     if 'LL_static_02' in algorithm:
-        LL_static_02_lda = int(args.LL_static_02_lda)
-        LL_static_02_alpha = int(args.LL_static_02_alpha)
-        LL_static_02_beta = int(args.LL_static_02_beta)
+        LL_static_02_lda = int(lda)#int(args.LL_static_02_lda)
+        LL_static_02_alpha = int(alpha)#int(args.LL_static_02_alpha)
+        LL_static_02_beta = int(beta) #int(args.LL_static_02_beta)
     if 'LL_dynamic_01' in algorithm:
         LL_dynamic_01_a = float(args.LL_dynamic_01_a)
         LL_dynamic_01_b = float(args.LL_dynamic_01_b)
