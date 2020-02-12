@@ -9,6 +9,7 @@ import subprocess
 import random
 import io
 import timeit
+import math
 
 from multiprocessing import Pool
 
@@ -84,11 +85,12 @@ class GP:
 
                 # get param values
                 self.evaluation_reg(t)
+                print('ok3',t.regression_values, str(simplify(t.infix_expression())))
 
                 # check if param is valid (inside [lbound,rbound])
                 valid = True
                 for x in t.regression_values.values():
-                    if x<self.lbound or x>self.rbound:
+                    if x<self.lbound or x>self.rbound or math.isnan(x):
                         valid = False
                         break
 
@@ -97,10 +99,12 @@ class GP:
                 else:
                     self.population.append(t) 
                 i = i+1
+            print('i>>',i, self.lbound, self.rbound)
 
         # evaluate population
         for ind in self.population:
             self.evaluate(ind)
+        print('ok4')
 
         # sort population
         self.population.sort(key=lambda x: x.fitness, reverse=True)
@@ -343,4 +347,6 @@ class GP:
 # Run target algorithm for one instance with static parameter values
 ##########################################################################
 def run_target_static(inst_name, param_values):
+    # z=subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8')
+    # print  (   '--->',z     )
     return float( subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8') )

@@ -2,8 +2,8 @@ from math import inf
 import datetime
 
 # GP parameters
-GENERATIONS     = 100                   # maximal number of generations to evolve programs
-POP_SIZE        = 20                   # population size
+GENERATIONS     = 10                   # maximal number of generations to evolve programs
+POP_SIZE        = 10                   # population size
 GEN_POP_SIZE    = round(POP_SIZE*.75)  # size of offspring population
 MIN_DEPTH       = 2                    # minimum initial tree depth
 MAX_DEPTH       = 4                    # maximum initial tree depth

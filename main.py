@@ -59,7 +59,7 @@ for inst in instances:
 print('>>>>>>',GP.ref_param_values)
 
 # Loop through all parameters (until EOF)
-nb_rep = 1
+nb_rep = 0
 for u in range(nb_rep):
     for i in range(len(parameters)):
 
@@ -77,8 +77,8 @@ for u in range(nb_rep):
         # parameter to tune
         nb_runs = 10.0
         param_name = parameter[0]
-        lbound = int(parameter[1]) if len(parameter)>=3 else -999
-        rbound = int(parameter[2]) if len(parameter)>=3 else +999
+        lbound = float(parameter[1]) if len(parameter)>=3 else -999
+        rbound = float(parameter[2]) if len(parameter)>=3 else +999
         step = (rbound-lbound)/nb_runs
         # calculate initial references
         for inst in instances:
@@ -89,6 +89,7 @@ for u in range(nb_rep):
 
                 tmp = GP.ref_param_values[inst[0]][i]
                 GP.ref_param_values[inst[0]][i] = str(param_value)
+                print('===>',inst[0], GP.ref_param_values[inst[0]])
                 inst_score = run_target_static(inst[0], GP.ref_param_values[inst[0]])
 
                 # if score is better, update reference

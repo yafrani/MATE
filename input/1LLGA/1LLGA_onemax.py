@@ -111,8 +111,9 @@ def main(argv):
    
     #args = parser.parse_args()
     size=int(sys.argv[1])
-    alpha=float(sys.argv[2])*10
-    beta=float(sys.argv[3])*10
+    alpha=round( float(sys.argv[2])*10 )
+    beta=round( float(sys.argv[3])*10 )
+    #print alpha, beta
     lda=1 #lda- integer : n_offspring=1
     #cross_bias=float(sys.argv[5])
     crossover_choice=1
@@ -256,7 +257,7 @@ def main(argv):
             fitlist=experiment[2]
             fsol=fitlist.pop()
             #print(alg)
-            print('Score:', fsol)
+            print fsol,
             #print(experiment[0])
             results[alg].insert_expriment(experiment)
 
@@ -285,5 +286,5 @@ def main(argv):
 
     
 if __name__ == "__main__":
-    print(' '.join(sys.argv))
+    #print(' '.join(sys.argv))
     main(sys.argv[1:])

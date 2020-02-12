@@ -1,1 +1,2 @@
-mutation_rate 0 1
+alpha 0.1 1
+beta 0.1 1
