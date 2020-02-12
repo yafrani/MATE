@@ -8,17 +8,17 @@
 
 ################################################################################
 # DESC:
-# 1LLGA for binary value - LL_static_02
+# 1LLGA for binary value - LL_dynamic_02
 # 
 # USAGE:
 # ./randsearch.py <instance-name> <param>
 # - instance-name: one max size
-# - params: alpha - float - mutation
-#			beta- float - crossover
+# - params: a - float - update strengh
+#			b- float - update strengh
 #			
 #
 # EXAMPLE:
-# - python2 1LLGA_onemax.py 10 0.5 0.5 
+# - python2 1LLGA_onemax.py 10 1.16 0.7 
 #
 # number of iterations is set to size*log(size) # try with n^2
 ################################################################################
@@ -111,14 +111,22 @@ def main(argv):
    
     #args = parser.parse_args()
     size=int(sys.argv[1])
+<<<<<<< HEAD
     alpha=round( float(sys.argv[2])*10 )
     beta=round( float(sys.argv[3])*10 )
     #print alpha, beta
+=======
+    alpha=1
+    beta=1
+    gamma=1
+    a=sys.argv[2]
+    b=sys.argv[3]
+>>>>>>> 0a1198e9de8ed63e301c0f08977255fe5003574f
     lda=1 #lda- integer : n_offspring=1
     #cross_bias=float(sys.argv[5])
     crossover_choice=1
     problem = "OneMax"    
-    algorithm = ["LL_static_02"] #"['LL_static']"
+    algorithm = ["LL_dynamic_02"] #"['LL_static']"
     it = 1
     steps = int(size)
     save = False
@@ -205,11 +213,11 @@ def main(argv):
         LL_dynamic_01_a = float(args.LL_dynamic_01_a)
         LL_dynamic_01_b = float(args.LL_dynamic_01_b)
     if 'LL_dynamic_02' in algorithm:
-        LL_dynamic_02_alpha = float(args.LL_dynamic_02_alpha)
-        LL_dynamic_02_beta = float(args.LL_dynamic_02_beta)
-        LL_dynamic_02_gamma = float(args.LL_dynamic_02_gamma)
-        LL_dynamic_02_a = float(args.LL_dynamic_02_a)
-        LL_dynamic_02_b = float(args.LL_dynamic_02_b)
+        LL_dynamic_02_alpha = int(alpha) #loat(args.LL_dynamic_02_alpha)
+        LL_dynamic_02_beta = int(beta)# float(args.LL_dynamic_02_beta)
+        LL_dynamic_02_gamma = int(gamma)# float(args.LL_dynamic_02_gamma)
+        LL_dynamic_02_a = float(a) #float(args.LL_dynamic_02_a)
+        LL_dynamic_02_b = float(b) #float(args.LL_dynamic_02_b)
 
     results = {}
     for alg in algorithm:
