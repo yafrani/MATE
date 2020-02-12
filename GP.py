@@ -85,7 +85,7 @@ class GP:
 
                 # get param values
                 self.evaluation_reg(t)
-                print('ok3',t.regression_values, str(simplify(t.infix_expression())))
+                #print('ok3',t.regression_values, str(simplify(t.infix_expression())))
 
                 # check if param is valid (inside [lbound,rbound])
                 valid = True
@@ -104,7 +104,6 @@ class GP:
         # evaluate population
         for ind in self.population:
             self.evaluate(ind)
-        print('ok4')
 
         # sort population
         self.population.sort(key=lambda x: x.fitness, reverse=True)
@@ -170,7 +169,7 @@ class GP:
             log_ref.write('\n')
             log_ref.flush()
 
-            print('PARAM',self.param_id,'| GEN:', gen+1)
+            print('PARAM',parameters[self.param_id][0],'| GEN:', gen+1)
             print('REF PARAM >>', GP.ref_param_values)
             print('REF FITNE >>', GP.references)
 
