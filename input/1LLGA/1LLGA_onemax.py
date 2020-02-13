@@ -111,18 +111,17 @@ def main(argv):
    
     #args = parser.parse_args()
     size=int(sys.argv[1])
-    '''<<<<<<< HEAD
-    alpha=round( float(sys.argv[2])*10 )
-    beta=round( float(sys.argv[3])*10 )
-    #print alpha, beta
-    ======='''
+
     alpha=1
     beta=1
     gamma=1
     a=sys.argv[2]
     b=sys.argv[3]
-    #>>>>>>> 0a1198e9de8ed63e301c0f08977255fe5003574f
+    if float(a)>2 or float(a)<1 or float(b)>1 or float(b)<0:
+        print "-1"
+        exit()
     lda=1 #lda- integer : n_offspring=1
+
     #cross_bias=float(sys.argv[5])
     crossover_choice=1
     problem = "OneMax"    
