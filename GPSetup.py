@@ -14,6 +14,8 @@ BLOAT_CONTROL   = False                # True adds bloat control to fitness func
 
 SAMPLE_RUNS     = 10                   # number of samples per GP tree
 
+STATE_SIGNIFICANCE = 0.02
+
 # Functions
 def add(x, y): return x + y
 def sub(x, y): return x - y

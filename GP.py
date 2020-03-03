@@ -214,7 +214,7 @@ class GP:
                     new_exp = str(simplify(new_trees[i].infix_expression()))
                     current_exp = str(simplify(self.population[j].infix_expression()))
                     
-                    if (pval >= 0.02 or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
+                    if (pval >= STATE_SIGNIFICANCE or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
                         print('>>', new_trees[i].regression_hash, new_exp, self.population[j].regression_hash, current_exp, pval)
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):

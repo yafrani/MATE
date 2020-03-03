@@ -59,7 +59,7 @@ for inst in instances:
 print('>>>>>>',GP.ref_param_values)
 
 # Loop through all parameters (until EOF)
-nb_rep = 0
+nb_rep = 1
 for u in range(nb_rep):
     for i in range(len(parameters)):
 
@@ -75,7 +75,7 @@ for u in range(nb_rep):
         # TODO: generalise to multiple parameters (e.g. grid search)
         #==========================================================
         # parameter to tune
-        nb_runs = 10.0
+        nb_runs = 1.0
         param_name = parameter[0]
         lbound = float(parameter[1]) if len(parameter)>=3 else -999
         rbound = float(parameter[2]) if len(parameter)>=3 else +999
