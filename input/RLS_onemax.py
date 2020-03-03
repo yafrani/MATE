@@ -21,7 +21,7 @@ from math import log, ceil
 import copy
 
 instance = sys.argv[1]
-nb_bits = int(sys.argv[2])
+nb_bits = int(float(sys.argv[2]))
 
 deb = False
 if (len(sys.argv)>3 and sys.argv[3]==str(1)):
