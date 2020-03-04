@@ -6,13 +6,13 @@
 # 
 # USAGE:
 # ./randsearch.py <instance-name> <param>
-# - instance-name: leading one size
+# - instance-name: one-max size
 # - param: mutation rate
 #
 # EXAMPLE:
-# - python3 EA_leadingones.py 10 0.5 1
+# - python3 RLS_leadingones.py 10 0.5 1
 #
-# number of iterations is set to size*log(size) # try with n^2
+# number of iterations is set to size*log(size)
 ################################################################################
 
 import sys
@@ -21,7 +21,7 @@ from math import log, ceil
 import copy
 
 instance = sys.argv[1]
-mut_rate = float(sys.argv[2])
+nb_bits = int(float(sys.argv[2]))
 
 deb = False
 if (len(sys.argv)>3 and sys.argv[3]==str(1)):
@@ -32,8 +32,8 @@ size = int(instance)
 
 nb_iter = ceil(size*log(size))
 
-if (mut_rate>1 or mut_rate<0):
-    print("-1")
+if (nb_bits>size or nb_bits<0):
+    print("-1", end='')
     exit()
 
 def fitness(sol):   
@@ -57,9 +57,9 @@ for i in range(1, nb_iter+1):
     solx = sol1.copy()
 
     # flip each bit according to the mutation rate
-    for j in range(0, size):
-        if (random()<=mut_rate): 
-            solx[j] = 0 if solx[j] == 1 else 1
+    for j in range(nb_bits):
+        idx = randint(0, size-1)
+        solx[idx] = 0 if solx[idx] == 1 else 1
 
     # check if the new solution is better than the current one
     fsolx = fitness(solx)
