@@ -350,4 +350,7 @@ class GP:
 def run_target_static(inst_name, param_values):
     # z=subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8')
     # print  (   '--->',z     )
+    
+    param_values = ['999999' if x=='inf' else '-999999' if x=='-inf' else x for x in param_values]
+    #print('>>>>>>>>>>>',param_values)
     return float( subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8') )
