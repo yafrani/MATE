@@ -8,10 +8,10 @@ The code has been tested on Python 2.7 and 3.6 and higher
 '''
 ################################################################################
 # DESC:
-# EA for NK-landscape
+# RLS for NK-landscape
 # 
 # USAGE:
-# python3 EA_nklandscape.py 10 2 8 1 0.1
+# python3 EA_nklandscape.py 10 2 8 1 3
 #
 # EXAMPLE:
 # - Params:
@@ -19,13 +19,13 @@ The code has been tested on Python 2.7 and 3.6 and higher
 #   - K
 #   - Neighborgood type
 #   - number of landscapes
-#   - mutation rate
+#   - number of bits
 # number of iterations is set to size*log(size)
 # =============================================================================
 
 print('''
 ----------------------------------------------------
-Running EA 
+Running RLS 
 ----------------------------------------------------
 ''')
 
@@ -55,7 +55,7 @@ K - set to 2 for which_imatrix = 2, 3, and 4. For which_imatrix=1 you can choose
 which_imatrix = int(sys.argv[3])      # | type of the interaction matrix
 K = int(sys.argv[2])                 # | number of interdependencies per decision variable
 #p_jump = float(sys.argv[5])          # | probability of a long jump in a given round
-mut_rate = float(sys.argv[5])          # | probability of a long jump in a given round
+nb_bits = int(float(sys.argv[5]))          # | probability of a long jump in a given round
 # ------------------------
 
 #if which_imatrix >1:  # to avoid a common mistake
@@ -85,9 +85,9 @@ for i1 in np.arange(i):
     for t1 in np.arange(t):  # time for local search
         Output2[i1, t1] = fitness_norm
         new_combination = combination.copy()
-        for j in range(0, N):
-        	if (random()<=mut_rate): 
-        		new_combination[j] = 0 if new_combination[j] == 1 else 1
+        for j in range(nb_bits):
+        	idx = randint(0, N-1) 
+        	new_combination[idx] = 0 if new_combination[idx] == 1 else 1
 
         row = np.sum(new_combination*power_key)
         new_fitness = NK_landscape[i1, row, 2*N]
