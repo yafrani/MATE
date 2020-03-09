@@ -13,7 +13,7 @@ class MPGP:
 
     def coevolution(self):
 
-        nb_rep = 10#len(parameters)**2
+        nb_rep = MPGP_ITERATIONS
         for u in range(nb_rep):
             print('=======================================================')
             print('CGP GEN:', u)
