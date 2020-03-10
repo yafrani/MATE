@@ -60,15 +60,17 @@ start = time()  # starts the clock used to measure the execution speed
 
 # NK landscape parameters -----------------------------------------
 N = int(sys.argv[1]) #6  # number of detailed decisions per lower level landscape   |
-i = int(sys.argv[4])# 1  # we will generate 1000 NK landscapes to begin with     |
+K = int(sys.argv[2])# 4  # only has an effect when you choose the random interaction matrix (1)
+#i = int(sys.argv[4])# 1  # we will generate 1000 NK landscapes to begin with     |
+i = 1
+
 # -----------------------------------------------------------------
 
 # You can change the following variables:
-which_imatrix = int(sys.argv[3])# 8  # defines the type of an interaction matrix
+which_imatrix = 8 #int(sys.argv[3])# 8  # defines the type of an interaction matrix
                    # choose 1 for random, 2 for modular, 3 for nearly modular,
                    # 4 for diagonal, 5 for highly influential, and
                    # 6 for highly dependent, 7 local (see below), 8 adjacent
-K = int(sys.argv[2])# 4  # only has an effect when you choose the random interaction matrix (1)
        # set to 2 for other interaction matrices
 
 
@@ -320,11 +322,10 @@ plt.ylabel('frequency', size=10)
 # single slash /
 #==============================================================================
 
-file_name = os.path.expanduser("~")  # we will save it in your home folder
-if not os.path.exists(file_name + '/NK_workshop/'):
-    os.makedirs(file_name + '/NK_workshop/')
-np.save(file_name + '/NK_workshop/NK_land_type_' + str(which_imatrix) +'_N_' + str(N) +
-        '_K_' + str(K) + '_i_' + str(i) + '.npy', Landscape_data)
+file_name = os.path.expanduser(".")  # we will save it in your home folder
+if not os.path.exists(file_name + '/instances/'):
+    os.makedirs(file_name + '/instances/')
+np.save(file_name + '/instances/T_' + str(which_imatrix) +'_N_' + str(N) +'_K_' + str(K) + '.npy', Landscape_data)
 
 elapsed_time = time() - start
 print('time: ' + str("%.2f" % elapsed_time) + ' sec')

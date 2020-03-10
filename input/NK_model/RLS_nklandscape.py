@@ -64,7 +64,7 @@ nb_bits = int(float(sys.argv[5]))          # | probability of a long jump in a g
 # *** 1. LOAD THE NK LANDSCAPE FILE *****************************************
 
 #file_name = expanduser("~")
-file_name = os.path.expanduser("~")  # we will save it in your home folder
+file_name = os.path.expanduser(".")  # we will save it in your home folder
 NK_landscape = np.load(file_name + '/NK_workshop/NK_land_type_' + str(which_imatrix) +'_N_' + str(N) +
         '_K_' + str(K) + '_i_' + str(i) + '.npy')
 

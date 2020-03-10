@@ -38,8 +38,11 @@ import os # new
 from random import random, randint, seed
 
 # Do not change these parameters--------------------------------------------
+instance_name = int(sys.argv[1])
 N = int(sys.argv[1])  #    set to N=6
-i = int(sys.argv[4]) # number of landscapes
+K = int(sys.argv[2])                 # | number of interdependencies per decision variable
+
+i = 1 #int(sys.argv[4]) # number of landscapes
 t = ceil(N*log(N)) #50  # time periods set to 50 initially
 # --------------------------------------------------------------------------
 
@@ -53,7 +56,6 @@ K - set to 2 for which_imatrix = 2, 3, and 4. For which_imatrix=1 you can choose
 
 # You can change those ---
 which_imatrix = int(sys.argv[3])      # | type of the interaction matrix
-K = int(sys.argv[2])                 # | number of interdependencies per decision variable
 #p_jump = float(sys.argv[5])          # | probability of a long jump in a given round
 mut_rate = float(sys.argv[5])          # | probability of a long jump in a given round
 # ------------------------
@@ -64,9 +66,8 @@ mut_rate = float(sys.argv[5])          # | probability of a long jump in a given
 # *** 1. LOAD THE NK LANDSCAPE FILE *****************************************
 
 #file_name = expanduser("~")
-file_name = os.path.expanduser("~")  # we will save it in your home folder
-NK_landscape = np.load(file_name + '/NK_workshop/NK_land_type_' + str(which_imatrix) +'_N_' + str(N) +
-        '_K_' + str(K) + '_i_' + str(i) + '.npy')
+file_name = os.path.expanduser(".")  # we will save it in your home folder
+NK_landscape = np.load(file_name + '/instances/T_' + str(which_imatrix) +'_N_' + str(N) + '_K_' + str(K) + '.npy')
 
 power_key = np.power(2, np.arange(N - 1, -1, -1))
 
