@@ -34,7 +34,7 @@ def fitness(sol):
 
 for instance in n:
     size = int(instance)
-    vec_bit=[1, 2]
+    vec_bit=[1, 2, 3, 4, 5]
     for nb_bits in vec_bit:
         vec_iter = [ceil(0.5*(size**2)), ceil(3/4*(size**2))]  
         for nb_iter in vec_iter:
@@ -62,7 +62,7 @@ for instance in n:
                     if (nb_hit==nb_iter+1 and fsol1==size):
                         nb_hit=i
 
-                result_line = 'LeadingOnes' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'RLS'+ ';' + str(nb_bits)+';' + str(run) + ';' + str(size-fsol1)+ ';' + str(nb_hit)
+                result_line = 'LeadingOnes' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'RLS'+ ';' + str(nb_bits)+';' + str(run) + ';' + str(fsol1)+ ';' + str(nb_hit)
                 #print (result_line)
                 # save result
                 fmet = open('output-LeadingOnes-RLS.csv', 'a')

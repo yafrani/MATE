@@ -34,7 +34,7 @@ def fitness(sol):
 
 for instance in n:
     size = int(instance)
-    vec_rate=[1/size, 2/size]
+    vec_rate=[1/size, 1.5/size, 2/size, 2.5/size, 3/size, 4/size, 5/size]
     for mut_rate in vec_rate:
         vec_iter = [ceil(0.5*(size**2)), ceil(0.8*(size**2)), ceil(0.9*(size**2))] 
         for nb_iter in vec_iter:
@@ -66,7 +66,7 @@ for instance in n:
 
                 #print('Score: ', end='')
 
-                result_line = 'LeadingOne' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'EA'+ ';' + str(mut_rate)+';' + str(run) + ';' + str(size-fsol1)+ ';' + str(nb_hit)
+                result_line = 'LeadingOne' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'EA'+ ';' + str(mut_rate)+';' + str(run) + ';' + str(fsol1)+ ';' + str(nb_hit)
                 #print (result_line)
                 # save result
                 fmet = open('output-LeadingOne-EA.csv', 'a')

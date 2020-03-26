@@ -2,7 +2,7 @@
 
 ################################################################################
 # DESC:
-# RLS for one-max
+# RLS for binvalue
 # 
 # USAGE:
 # ./randsearch.py <instance-name> <param>
@@ -10,7 +10,7 @@
 # - param: mutation rate
 #
 # EXAMPLE:
-# - python3 EA_onemax.py 10 0.5 1
+# - python3 RLS_onemax.py 10 0.5 1
 #
 # number of iterations is set to size*log(size)
 ################################################################################
@@ -20,12 +20,14 @@ from random import random, randint, seed
 from math import log, ceil, exp
 import copy
 
-################### Configurations ##############################
 n=[10,20,50,100,200,500]
 nb_run=100
 
-def fitness(sol):
-    return sol.count(1)
+def fitness(sol):   
+    result = 0 
+    for i in range(0, size): 
+        result=result+(2**(size-(i+1))*sol[i])
+    return result
 
 for instance in n:
     size = int(instance)
@@ -35,7 +37,7 @@ for instance in n:
         for nb_iter in vec_iter:
             for run in range(0, nb_run):
                 nb_hit=nb_iter+1
-                print("Instance: onemax", str(instance), str(nb_bits), str(nb_iter), str(run))
+                print("Instance: bin-value", str(instance), str(nb_bits), str(nb_iter), str(run))
                 sol1 = [randint(0, 1) for i in range(size)] # select tournament contenders
                 fsol1 = fitness(sol1)
                 for i in range(1, nb_iter+1):
@@ -57,10 +59,10 @@ for instance in n:
                     if (nb_hit==nb_iter+1 and fsol1==size):
                         nb_hit=i
 
-                result_line = 'OneMax' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'RLS'+ ';' + str(nb_bits)+';' + str(run) + ';' + str(fsol1)+ ';' + str(nb_hit)
+                result_line = 'BinValue' + ';' + str(instance)+ ';' + str(nb_iter)+ ';' + 'RLS'+ ';' + str(nb_bits)+';' + str(run) + ';' + str(fsol1)+ ';' + str(nb_hit)
                 #print (result_line)
                 # save result
-                fmet = open('output-OneMax-RLS.csv', 'a')
+                fmet = open('output-BinValue-RLS.csv', 'a')
                 fmet.write(result_line+'\n')
                 fmet.flush()
                 fmet.close()
