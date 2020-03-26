@@ -19,6 +19,8 @@ import sys
 from random import random, randint, seed
 from math import log, ceil
 import copy
+from gmpy2 import popcount
+
 
 instance_name = sys.argv[1].split('_')
 nb_bits = int(float(sys.argv[2]))
@@ -31,16 +33,19 @@ if (deb): print("Instance: onemax", instance)
 m = int(instance_name[0])
 n = int(instance_name[1])
 
-nb_iter = ceil(n*log(n))
+#nb_iter = ceil(2*n**m)
+nb_iter = ceil(n**m)
 
 if (nb_bits>n or nb_bits<0):
     print("-1", end='')
     exit()
 
-def fitness_om(sol):
-    return sol.count(1)
+#def fitness_om(sol):
+#    return sol.count(1)
+
 def fitness(sol):
-    fom = fitness_om(sol)
+    #fom = fitness_om(sol)
+    fom = sol.count(1)
     if fom<=n-m or fom==n:
         return m+fom
     return n-fom
@@ -54,18 +59,27 @@ if (deb): print ("=> Start optimisation")
 for i in range(1, nb_iter+1):
 
     # clone current solution
-    solx = sol1.copy()
+    #solx = sol1.copy()
+    #solx=[*sol1]
 
     # flip each bit according to the mutation rate
+    idx = []
     for j in range(nb_bits):
-        idx = randint(0, n-1)
-        solx[idx] = 0 if solx[idx] == 1 else 1
+        rnd_idx = randint(0, n-1)
+        idx.append( rnd_idx )
+        sol1[rnd_idx] = 0 if sol1[rnd_idx] == 1 else 1
 
     # check if the new solution is better than the current one
-    fsolx = fitness(solx)
+    fsolx = fitness(sol1)
     if (fsolx>fsol1):
-        sol1 = solx
+        #sol1 = solx
         fsol1 = fsolx
+    else:
+        for j in range(nb_bits):
+            #rnd_idx = randint(0, n-1)
+            #idx.add( rnd_idx )
+            sol1[ idx[j] ] = 0 if sol1[ idx[j] ] == 1 else 1
+
     
     if (deb): print(i, sol1, fsol1)
 

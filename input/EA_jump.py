@@ -31,16 +31,16 @@ if (deb): print("Instance: onemax", instance)
 m = int(instance_name[0])
 n = int(instance_name[1])
 
-nb_iter = ceil(n*log(n))
+nb_iter = ceil(n**m)
 
 if (mut_rate>1 or mut_rate<0):
     print("-1", end='')
     exit()
 
-def fitness_om(sol):
-    return sol.count(1)
+# def fitness_om(sol):
+#     return sol.count(1)
 def fitness(sol):
-    fom = fitness_om(sol)
+    fom = sol.count(1)
     if fom<=n-m or fom==n:
         return m+fom
     return n-fom
