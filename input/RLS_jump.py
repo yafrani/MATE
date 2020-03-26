@@ -40,11 +40,7 @@ if (nb_bits>n or nb_bits<0):
     print("-1", end='')
     exit()
 
-#def fitness_om(sol):
-#    return sol.count(1)
-
 def fitness(sol):
-    #fom = fitness_om(sol)
     fom = sol.count(1)
     if fom<=n-m or fom==n:
         return m+fom

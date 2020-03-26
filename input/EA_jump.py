@@ -17,7 +17,7 @@
 
 import sys
 from random import random, randint, seed
-from math import log, ceil
+from math import log, ceil, e
 import copy
 
 instance_name = sys.argv[1].split('_')
@@ -32,13 +32,13 @@ m = int(instance_name[0])
 n = int(instance_name[1])
 
 nb_iter = ceil(n**m)
+# nb_iter = ceil(e*n**m)
+# nb_iter = ceil(2*e*n**m)
 
 if (mut_rate>1 or mut_rate<0):
     print("-1", end='')
     exit()
 
-# def fitness_om(sol):
-#     return sol.count(1)
 def fitness(sol):
     fom = sol.count(1)
     if fom<=n-m or fom==n:
