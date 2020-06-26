@@ -18,9 +18,10 @@
 import sys
 from random import random, randint, seed
 from math import log, ceil
-import copy
+import copy, datetime
 from gmpy2 import popcount
 
+a = datetime.datetime.now()
 
 instance_name = sys.argv[1].split('_')
 nb_bits = int(float(sys.argv[2]))
@@ -35,12 +36,17 @@ n = int(instance_name[1])
 
 #nb_iter = ceil(2*n**m)
 nb_iter = ceil(n**m)
+#print (nb_iter)
 
 if (nb_bits>n or nb_bits<0):
     print("-1", end='')
     exit()
 
+#def fitness_om(sol):
+#    return sol.count(1)
+
 def fitness(sol):
+    #fom = fitness_om(sol)
     fom = sol.count(1)
     if fom<=n-m or fom==n:
         return m+fom
@@ -83,3 +89,7 @@ for i in range(1, nb_iter+1):
 if (deb): print('Score: ', end='')
 print(fsol1, end='')
 if (deb): print()
+
+b = datetime.datetime.now()
+c = b-a
+#print('>>>',c.microseconds)

@@ -14,8 +14,8 @@ import math
 from multiprocessing import Pool
 
 from sympy import simplify, symbols
-#import platform
-#print(platform.system())
+# import platform
+# print(platform.system())
 
 from MPGP import *
 
@@ -44,7 +44,6 @@ class GP:
 
         self.lbound = float(parameters[param_id][1]) if len(parameters[param_id])>=3 else -999
         self.rbound = float(parameters[param_id][2]) if len(parameters[param_id])>=3 else +999
-
 
 
     ##########################################################################

@@ -1,73 +1,23 @@
-# -*- coding: utf-8 -*-
-'''
-Created on Thu Jun 14 15:07:29 2018
-
-@author: Maciej Workiewicz
-
-The code has been tested on Python 2.7 and 3.6 and higher
-'''
-################################################################################
-# DESC:
-# EA for NK-landscape
-# 
-# USAGE:
-# python3 EA_nklandscape.py 10 2 8 1 0.1
-#
-# EXAMPLE:
-# - Params:
-#   - N
-#   - K
-#   - Neighborgood type
-#   - number of landscapes
-#   - mutation rate
-# number of iterations is set to size*log(size)
-# =============================================================================
-
-print('''
-----------------------------------------------------
-Running EA 
-----------------------------------------------------
-''')
-
 import numpy as np
 from os.path import expanduser  # new
 import matplotlib.pyplot as plt
 import sys
 from math import log, ceil
 import os # new
+import re
 from random import random, randint, seed
 
-# Do not change these parameters--------------------------------------------
-instance_name = int(sys.argv[1])
-N = int(sys.argv[1])  #    set to N=6
-K = int(sys.argv[2])                 # | number of interdependencies per decision variable
+instance_name = sys.argv[1]
+mut_rate = float(sys.argv[2])          # | probability of a long jump in a given round
 
-i = 1 #int(sys.argv[4]) # number of landscapes
-t = ceil(N*log(N)) #50  # time periods set to 50 initially
-# --------------------------------------------------------------------------
+NK_landscape = np.load('./input/NK_model/instances/'+instance_name)
 
-'''
-You can experiment with different setting of the following two variables:
-which_imatrix - select 1 for random IM; 2 modular; 3 nearly-mod; 4 diagonal
+[N,K,T] = list(map(int, re.findall(r'N(\d+)K(\d+)T(\d+)\.npy', instance_name)[0] ))
 
-K - set to 2 for which_imatrix = 2, 3, and 4. For which_imatrix=1 you can choose
-    K from 0 (no interactions) to N-1 (maximum interactions)
-'''
+i = 1 # number of landscapes
 
-# You can change those ---
-which_imatrix = int(sys.argv[3])      # | type of the interaction matrix
-#p_jump = float(sys.argv[5])          # | probability of a long jump in a given round
-mut_rate = float(sys.argv[5])          # | probability of a long jump in a given round
-# ------------------------
-
-#if which_imatrix >1:  # to avoid a common mistake
- #   K = 2
-
-# *** 1. LOAD THE NK LANDSCAPE FILE *****************************************
-
-#file_name = expanduser("~")
-file_name = os.path.expanduser(".")  # we will save it in your home folder
-NK_landscape = np.load(file_name + '/instances/T_' + str(which_imatrix) +'_N_' + str(N) + '_K_' + str(K) + '.npy')
+# budget will be tricky...
+t = ceil(N*log(N)) # time periods set to 50 initially
 
 power_key = np.power(2, np.arange(N - 1, -1, -1))
 
@@ -99,6 +49,4 @@ for i1 in np.arange(i):
         # otherwise all stays the same as in the previous round
 Fitness2 = np.mean(Output2, axis=0)
 
-print('Final fitness level: ' + str(Fitness2[t-1]))
-
-# END OF LINE
+print(str(Fitness2[t-1]),end='')

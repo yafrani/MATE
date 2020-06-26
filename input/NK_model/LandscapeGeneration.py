@@ -325,7 +325,7 @@ plt.ylabel('frequency', size=10)
 file_name = os.path.expanduser(".")  # we will save it in your home folder
 if not os.path.exists(file_name + '/instances/'):
     os.makedirs(file_name + '/instances/')
-np.save(file_name + '/instances/T_' + str(which_imatrix) +'_N_' + str(N) +'_K_' + str(K) + '.npy', Landscape_data)
+np.save(file_name + '/instances/' +'N' + str(N) +'K' + str(K) + 'T'+ str(which_imatrix) +'.npy', Landscape_data)
 
 elapsed_time = time() - start
 print('time: ' + str("%.2f" % elapsed_time) + ' sec')
