@@ -3,7 +3,7 @@
 ################################################################################
 # DESC:
 # RLS for one-max
-# 
+#
 # USAGE:
 # ./randsearch.py <instance-name> <param>
 # - instance-name: one-max n
@@ -82,7 +82,6 @@ for i in range(1, nb_iter+1):
             #idx.add( rnd_idx )
             sol1[ idx[j] ] = 0 if sol1[ idx[j] ] == 1 else 1
 
-    
     if (deb): print(i, sol1, fsol1)
 
 
