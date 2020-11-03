@@ -7,10 +7,19 @@ instance = sys.argv[1]
 size = int(instance)
 rate_mu = float(sys.argv[2])
 prob_x = float(sys.argv[3])
-size_pop = 10
+size_pop = 50
 size_offspring = 1
 
 nb_iter = ceil(0.5*size*size)
+
+# penalise our-of-bound parameter values
+if (rate_mu>1 or rate_mu<0):
+    print("-1", end='')
+    exit()
+
+if (prob_x>1 or prob_x<0):
+    print("-1", end='')
+    exit()
 
 # Leading ones fitness
 def fitness(sol):   
@@ -77,4 +86,4 @@ for t in range(nb_iter):
     # soft and reshape population
     pop = np.array(sorted(pop,key=lambda x: x[-1], reverse=True))[0:size_pop]
 
-print(pop)
+print(pop[0,-1], end='')

@@ -12,7 +12,7 @@ PROB_MUTATION   = 0.2                  # per-node mutation probability
 BLOAT_CONTROL   = False                # True adds bloat control to fitness function
 
 # Statistical setting
-SAMPLE_RUNS     = 10                   # number of samples per GP tree
+SAMPLE_RUNS     = 1                   # number of samples per GP tree
 STATE_SIGNIFICANCE = 0.02
 
 # Functions
@@ -54,7 +54,7 @@ with open('cfg_parameters.txt', 'r') as file:
 
 
 # maximal number of generations to evolve programs
-GENERATIONS     = 100 if len(parameters)==1 else 10
+GENERATIONS     = 100 #if len(parameters)==1 else 10
 
 # Multi-population GP parameters
 MPGP_ITERATIONS = 1 if len(parameters)==1 else 10

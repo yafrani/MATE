@@ -1,4 +1,4 @@
-instance n k
-N10K2T8.npy 10 2
-N10K4T8.npy 10 4
-N10K6T8.npy 10 6
+instance n
+10 10
+20 20
+50 50

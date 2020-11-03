@@ -1,1 +1,1 @@
-python3 ./input/NK_model/EA_nklandscape.py
+python3 ./input/GA_leadingones.py

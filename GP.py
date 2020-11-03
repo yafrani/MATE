@@ -169,8 +169,8 @@ class GP:
             log_ref.flush()
 
             print('PARAM',parameters[self.param_id][0],'| GEN:', gen+1)
-            print('REF PARAM >>', GP.ref_param_values)
-            print('REF FITNE >>', GP.references)
+            #print('REF PARAM >>', GP.ref_param_values)
+            #print('REF FITNE >>', GP.references)
 
 
             # generate a new population of same size
@@ -214,7 +214,7 @@ class GP:
                     current_exp = str(simplify(self.population[j].infix_expression()))
                     
                     if (pval >= STATE_SIGNIFICANCE or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
-                        print('>>', new_trees[i].regression_hash, new_exp, self.population[j].regression_hash, current_exp, pval)
+                        #print('>>', new_trees[i].regression_hash, new_exp, self.population[j].regression_hash, current_exp, pval)
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):
                             # debug

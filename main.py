@@ -56,7 +56,7 @@ for inst in instances:
         rbound = float(parameter[2]) if len(parameter)>=3 else +999
         GP.ref_param_values[inst[0]].append( str((lbound+rbound)/2.0) )
 
-print('>>>>>>',GP.ref_param_values)
+#print('>>>>>>',GP.ref_param_values)
 
 # Loop through all parameters (until EOF)
 nb_rep = 1
@@ -89,7 +89,7 @@ for u in range(nb_rep):
 
                 tmp = GP.ref_param_values[inst[0]][i]
                 GP.ref_param_values[inst[0]][i] = str(param_value)
-                print('===>',inst[0], GP.ref_param_values[inst[0]])
+                #print('===>',inst[0], GP.ref_param_values[inst[0]])
                 inst_score = run_target_static(inst[0], GP.ref_param_values[inst[0]])
 
                 # if score is better, update reference
@@ -125,7 +125,7 @@ result_pop = open("./output/result_pop-" + dt + ".txt", "w+")
 for i in range(len(parameters)):
 
     #==========================================================
-    # Tune for parameter #1
+    # Tune for parameter i
     #==========================================================
     parameter = parameters[i]
     result_pop.write('Parameter: ' + parameter[0] + '\n')
