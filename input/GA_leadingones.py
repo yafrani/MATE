@@ -10,7 +10,7 @@ prob_x = float(sys.argv[3])
 size_pop = 50
 size_offspring = 1
 
-nb_iter = ceil(0.5*size*size)
+nb_iter = ceil(5*size*size)
 
 # penalise our-of-bound parameter values
 if (rate_mu>1 or rate_mu<0):

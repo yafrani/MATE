@@ -1,6 +1,8 @@
 from statistics import mean
 from copy import deepcopy
 from scipy import stats
+import statsmodels.stats.weightstats as smws
+import numpy as np
 
 from GPTree import *
 import GPSetup
@@ -14,10 +16,6 @@ import math
 from multiprocessing import Pool
 
 from sympy import simplify, symbols
-# import platform
-# print(platform.system())
-
-from MPGP import *
 
 
 # GP population
@@ -44,6 +42,18 @@ class GP:
 
         self.lbound = float(parameters[param_id][1]) if len(parameters[param_id])>=3 else -999
         self.rbound = float(parameters[param_id][2]) if len(parameters[param_id])>=3 else +999
+
+
+    ##########################################################################
+    # String representation of GP population
+    ##########################################################################
+    def output_csv(self):
+        s = ''
+        for program in self.population:
+            exp = program.infix_expression()
+            s = s + ('%2.2f,' %program.fitness) + ('%2d,' %program.size())
+            s = s + str(simplify(exp)) + '\n'
+        return s
 
 
     ##########################################################################
@@ -120,6 +130,59 @@ class GP:
 
 
     ##########################################################################
+    # Replacement and bloat minimisation
+    ##########################################################################
+    def replacement(self, new_trees):
+        # sample dimensions
+        print("================================================")
+        print(">>>>>>>>>>>>> REPLACEMENT")
+        print("================================================")
+        m, n = GEN_POP_SIZE, POP_SIZE
+
+        Q = np.empty([GEN_POP_SIZE, SAMPLE_RUNS], dtype=float)
+        P = np.empty([POP_SIZE, SAMPLE_RUNS], dtype=float)
+        for i in range(GEN_POP_SIZE):
+            Q[i,:] = np.array( self.normalise_scores(new_trees[i]) )
+        for j in range(POP_SIZE):
+            P[j,:] = np.array( self.normalise_scores(self.population[j]) )
+
+        # mean scores
+        Qm = [mean(q) for q in Q]
+        Pm = [mean(p) for p in P]
+
+        # create mean score gap matrox
+        G = np.empty([m, n])
+        for i in range(m):
+            for j in range(n):
+                # mean score gap
+                G[i,j] = Qm[i] - Pm[j]
+
+        R = np.array([], dtype=int)
+        candidates = get_candidates(G)
+        for i,j in candidates:
+            if G[i,j]>0 and T_test(Q[i],P[j]) < STAT_SIGNIFICANCE and \
+                not new_trees[i].regression_hash in [x.regression_hash for x in self.population]:
+                print("replace 1:", mean(P[j]), mean(Q[i]))
+                P[j] = Q[i]
+                self.population[j] = new_trees[i]
+            else:
+                R = np.append(R, [i])
+
+        for r in R:
+            for j in range(n):
+                new_exp = str(simplify(new_trees[r].infix_expression()))
+                current_exp = str(simplify(self.population[j].infix_expression()))
+                if (Eq_test(Q[r],P[j]) < STAT_SIGNIFICANCE or new_trees[r].regression_hash == self.population[j].regression_hash or new_exp==current_exp) and \
+                    new_trees[r].size() < self.population[j].size() and \
+                    not new_trees[r].regression_hash in [x.regression_hash for x in self.population]:
+                    print("replace 2:", current_exp+'('+str(mean(P[j]))+')', '<= ', new_exp+'('+str(mean(Q[r]))+')' )
+                    P[j] = Q[r]
+                    self.population[j] = new_trees[r]
+        print("================================================")
+
+
+
+    ##########################################################################
     # Evolve population
     ##########################################################################
     def evolution(self):
@@ -147,8 +210,8 @@ class GP:
         #==========================================================
         # log files
         #==========================================================
-        log_bloat = open("./output/log_bloat-" + dt + ".csv","w+")
-        log_ref   = open("./output/log_ref-" +   dt + ".csv","w+")
+        log_bloat = open("./output/log_bloat-" + DT + ".csv","w+")
+        log_ref   = open("./output/log_ref-" +   DT + ".csv","w+")
         # log header
         log_bloat.write('Generation Old_size New_size\n')
         log_bloat.flush()
@@ -168,7 +231,6 @@ class GP:
             log_ref.write('\n')
             log_ref.flush()
 
-            print('PARAM',parameters[self.param_id][0],'| GEN:', gen+1)
             #print('REF PARAM >>', GP.ref_param_values)
             #print('REF FITNE >>', GP.references)
 
@@ -195,8 +257,9 @@ class GP:
             # new_pop = GP(new_trees)
             # print(new_pop)
 
-
             # replacement & bloat control
+            self.replacement(new_trees)
+            '''
             k = -1
             for i in range(GEN_POP_SIZE):
                 tree_size_new = new_trees[i].size()
@@ -204,34 +267,39 @@ class GP:
 
                 dropped = False
                 for j in range(POP_SIZE):
+                #for j in range(POP_SIZE-1, 0, -1):
                     tree_size_current = self.population[j].size()
 
                     # if the tress represent the same expression
                     current_scores = self.normalise_scores(self.population[j])
                     _, pval = stats.ranksums(new_scores, current_scores)
-
+                    
+                    #print('==>', pval, mean(new_scores), mean(current_scores))
+                    
                     new_exp = str(simplify(new_trees[i].infix_expression()))
                     current_exp = str(simplify(self.population[j].infix_expression()))
                     
-                    if (pval >= STATE_SIGNIFICANCE or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
-                        #print('>>', new_trees[i].regression_hash, new_exp, self.population[j].regression_hash, current_exp, pval)
+                    if (mean(new_scores)<0):
+                        continue
+
+                    # if there is no statistical difference between new and old scores
+                    if (pval >= STAT_SIGNIFICANCE or new_trees[i].regression_hash == self.population[j].regression_hash or new_exp==current_exp):
                         # if the new tree is less complex
                         if ( tree_size_new < tree_size_current ):
                             # debug
                             #print('[REPLACE] >> ', tree_size_current,'|',self.population[j].fitness, ' ==> ', tree_size_new, '|', new_trees[i].fitness , ' ## ', end='')
                             # save log
-                            log_bloat.write(str(gen+1)+' '+str(tree_size_current)+' '+str(tree_size_new)+' '+ new_trees[i].infix_expression() +'\n')
-                            log_bloat.flush()
+                            #log_bloat.write(str(gen+1)+' '+str(tree_size_current)+' '+str(tree_size_new)+' '+ new_trees[i].infix_expression() +'\n')
+                            #log_bloat.flush()
                             self.population[j] = new_trees[i]
-                            #j = j-1
 
-                        #print('[DROP] >> ', self.population[j].regression_hash)
                         dropped = True
                         break
-                if (not dropped):
+
+                if (not dropped):# and mean(new_scores) > mean(current_scores)):
                     self.population[k] = new_trees[i]
                     k = k-1
-
+            '''
 
             # population evaluation
             for ind in self.population:
@@ -240,14 +308,19 @@ class GP:
             # soft population based on fitness
             self.population.sort(key=lambda x: x.fitness, reverse=True)
 
+            '''
             # update reference parameter values
             for inst in instances:
                 GP.ref_param_values[inst[0]][self.param_id] = str(self.population[0].regression_values[inst[0]])
+            '''
 
             # DEB: print population
-            print(self)
+            print('--------------------------------')
+            print('PARAM',parameters[self.param_id][0],'| GEN:', gen+1,'\n'+self.__str__())
+            #print(self)
             print('--------------------------------')
         #==========================================================
+
         log_bloat.close()
         log_ref.close()
 
@@ -343,6 +416,35 @@ class GP:
 
 
 
+# T-test
+def T_test(x, y):
+  return stats.ttest_ind(x, y)[1]
+
+# test for equivalence
+def Eq_test(x, y):
+  return smws.ttost_ind(x, y, -0.05, 0.05, usevar='pooled')[0]
+
+# candidates for replacement
+def get_candidates(G):
+  m, n = len(G),len(G[0])
+  G_flat = np.empty((0,3), dtype=[ ('i','i8'), ('j','i8'), ('val','f8') ] )
+  for i in range(m):
+    for j in range(n):
+      G_flat = np.append(G_flat, np.array([(i,j,G[i,j])], dtype=G_flat.dtype) )
+  # sort flatened G matrix in a descending order
+  G_sort = np.sort(G_flat, order='val')[::-1]
+
+  candidates = np.full([m,2], -1, dtype=int)
+
+  k = 0
+  for s in G_sort:
+    if not s[0] in candidates[:,0] and not s[1] in candidates[:,1] :
+      candidates[k] = np.array([s[0],s[1]], dtype=candidates.dtype)
+      k += 1
+
+  return candidates
+
+
 ##########################################################################
 # Run target algorithm for one instance with static parameter values
 ##########################################################################
@@ -350,5 +452,5 @@ def run_target_static(inst_name, param_values):
     # z=subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8')
     # print  (   '--->',z     )
     
-    param_values = ['999999' if x=='inf' else '-999999' if x=='-inf' else x for x in param_values]
+    param_values = ['999999999999' if x=='inf' else '-999999999999' if x=='-inf' else x for x in param_values]
     return float( subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8') )

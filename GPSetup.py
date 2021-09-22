@@ -12,8 +12,22 @@ PROB_MUTATION   = 0.2                  # per-node mutation probability
 BLOAT_CONTROL   = False                # True adds bloat control to fitness function
 
 # Statistical setting
-SAMPLE_RUNS     = 1                   # number of samples per GP tree
-STATE_SIGNIFICANCE = 0.02
+SAMPLE_RUNS        = 10                # number of samples per GP tree
+STAT_SIGNIFICANCE  = 0.05
+
+# Initialisation setting
+INIT_ITERATIONS     = 5               # number of repititions for initialisation (searching one parameter and fixing the others)
+NB_PARAM_CANDIDATES = 10               # number of parameter values
+
+# maximum number of generations to evolve programs
+GENERATIONS     = 10
+
+# Date and time
+DT = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+# Debugging
+debug = True
+
 
 # Functions
 def add(x, y): return x + y
@@ -34,7 +48,7 @@ FUNCTION_SYM = {
 with open('cfg_instances.txt', 'r') as file:
     FEATURES = file.readline().split()[1:]
 
-TERMINALS = FEATURES + [-2, -1, 1, 2]
+TERMINALS = FEATURES + [-1, 1, 2, 3, 4]
 
 
 #==========================================================
@@ -52,16 +66,5 @@ with open('cfg_instances.txt', 'r') as file:
 with open('cfg_parameters.txt', 'r') as file:
     parameters = [line.split() for line in file.readlines()[0:]]
 
-
-# maximal number of generations to evolve programs
-GENERATIONS     = 100 #if len(parameters)==1 else 10
-
-# Multi-population GP parameters
-MPGP_ITERATIONS = 1 if len(parameters)==1 else 10
-
-
-# Date and time
-dt = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
-# Debugging
-debug = True
+# Sequential multi-population GP parameters
+#MPGP_ITERATIONS = 1 if len(parameters)==1 else 10

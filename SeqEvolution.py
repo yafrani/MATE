@@ -2,8 +2,8 @@ from GP import *
 from GPSetup import *
 
 
-# Coevolution GP
-class MPGP:
+# Sequential evolution GP
+class SeqEvolution:
     
     def __init__(self, gp = None):
         self.gp = []
@@ -11,7 +11,7 @@ class MPGP:
             self.gp.append( GP() )
 
 
-    def coevolution(self):
+    def evolution(self):
 
         nb_rep = MPGP_ITERATIONS
         for u in range(nb_rep):

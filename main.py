@@ -13,8 +13,11 @@ from graphviz import Digraph, Source
 from sympy import simplify, symbols
 
 from utils import *
-from MPGP import *
+from SeqEvolution import *
+from CoEvolution import *
 from GPSetup import *
+
+import numpy as np
 
 #import platform
 #print(platform.system()=='Linux')
@@ -46,59 +49,73 @@ print('=============================================')
 print('=============================================')
 #==========================================================
 
+def run_target_wrapper(inst_param):
+    return run_target_static(inst_param[0], inst_param[1])
 
-# Initial parameter values
-# Use average of parameter interval
+
+# Initialise parameter values arbitrarily: use average of parameter interval
 for inst in instances:
     GP.ref_param_values[inst[0]] = []
     for parameter in parameters:
-        lbound = float(parameter[1]) if len(parameter)>=3 else -999
-        rbound = float(parameter[2]) if len(parameter)>=3 else +999
+        lbound = float(parameter[1]) if len(parameter)>=3 else -999999999999
+        rbound = float(parameter[2]) if len(parameter)>=3 else +999999999999
         GP.ref_param_values[inst[0]].append( str((lbound+rbound)/2.0) )
-
 #print('>>>>>>',GP.ref_param_values)
 
-# Loop through all parameters (until EOF)
-nb_rep = 1
-for u in range(nb_rep):
+
+# Initialise parameter values based on best score / for each instance
+mean_references = {}  # dict to store mean best parameter values
+for inst in instances:
+    mean_references[inst[0]] = -inf
+
+for u in range(INIT_ITERATIONS):
     for i in range(len(parameters)):
-
-        #==========================================================
-        # Tune for parameter #1
-        #==========================================================
+        # Tune for parameter i
         parameter = parameters[i]
-
 
         #==========================================================
         # Generate references fitnesses for each instance
         # and select best
-        # TODO: generalise to multiple parameters (e.g. grid search)
         #==========================================================
-        # parameter to tune
-        nb_runs = 1.0
-        param_name = parameter[0]
-        lbound = float(parameter[1]) if len(parameter)>=3 else -999
-        rbound = float(parameter[2]) if len(parameter)>=3 else +999
-        step = (rbound-lbound)/nb_runs
+        
+        param_name = parameter[0]  # parameter to run
+        lbound = float(parameter[1]) if len(parameter)>=3 else -999999999999
+        rbound = float(parameter[2]) if len(parameter)>=3 else +999999999999
+        step = float(rbound-lbound)/NB_PARAM_CANDIDATES
         # calculate initial references
+        print("pre-tuning", param_name+":")
         for inst in instances:
-            for r in range(0, round(nb_runs)):
-                # run with parameter
+            print("instance",inst[0])
+            for r in range(0, NB_PARAM_CANDIDATES):
+                # generate parameter values
                 param_value = lbound + step*r + step/2.0
-                #print('==',param_value)
 
                 tmp = GP.ref_param_values[inst[0]][i]
                 GP.ref_param_values[inst[0]][i] = str(param_value)
-                #print('===>',inst[0], GP.ref_param_values[inst[0]])
-                inst_score = run_target_static(inst[0], GP.ref_param_values[inst[0]])
 
-                # if score is better, update reference
-                if (inst_score > GP.references[inst[0]]):
-                    #print('YAAAY',param_value)
-                    GP.references[inst[0]] = inst_score
+                #==============================
+                # run multiple times
+                scores_list = None
+                #with Pool(SAMPLE_RUNS) as p:
+                with Pool(1) as p:
+                    scores_list = p.map(run_target_wrapper, [ [inst[0], GP.ref_param_values[inst[0]] ] ] *SAMPLE_RUNS)
+                inst_score = mean(scores_list)
+                max_score = max(scores_list)
+                #_, pval = stats.ranksums(new_scores, current_scores)
+
+                #print('=> MEAN:', inst_score,'| REF:',mean_references[inst[0]],'|MAX:',max_score)
+                
+                # if score is better, keep new parameter value and update mean value reference
+                if (inst_score > mean_references[inst[0]]):
+                    mean_references[inst[0]] = inst_score
                 else:
                     GP.ref_param_values[inst[0]][i] = tmp
 
+                # update score references if max current score is better
+                if (max_score > GP.references[inst[0]]):
+                    GP.references[inst[0]] = inst_score
+
+        print('PARAM REFERENCES | it='+str(u)+' | p='+param_name+':')
         print(GP.ref_param_values)
 
         print('=============================================')
@@ -107,19 +124,21 @@ for u in range(nb_rep):
         for (inst, score) in GP.references.items():
             print(inst+':', score)
         print('=============================================')
-#exit()
+
+
+
 
 
 
 #==========================================================
-# GP evolution
+# GP Co-evolution
 #==========================================================
-pops = MPGP()
-pops.coevolution()
+pops = CoEvolution()
+pops.evolution()
 
-
+'''
 #==========================================================
-# Store final population
+# store final populations
 #==========================================================
 result_pop = open("./output/result_pop-" + dt + ".txt", "w+")
 for i in range(len(parameters)):
@@ -129,9 +148,9 @@ for i in range(len(parameters)):
     #==========================================================
     parameter = parameters[i]
     result_pop.write('Parameter: ' + parameter[0] + '\n')
-    result_pop.write(str(pops.gp[i]) + '\n')
+    result_pop.write(str(pops.gp[i].output_csv()) + '\n')
     result_pop.write('==============================' + '\n')
     result_pop.flush()
 result_pop.close()
 #==========================================================
-
+'''
