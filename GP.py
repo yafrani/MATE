@@ -24,14 +24,17 @@ class GP:
 
     # reference fitnesses to be used as upper bounds
     # each instance has a reference
-    # references are parameter-independent
+    # references are "parameter-independent"
     references = {}
+    
+    '''    
     for inst in instances:
         references[inst[0]] = -inf
+    '''
 
     # references values for parameters for each instance
     ref_param_values = {}
-
+    
 
     ##########################################################################
     # Construct GP instance for one parameter
@@ -42,6 +45,7 @@ class GP:
 
         self.lbound = float(parameters[param_id][1]) if len(parameters[param_id])>=3 else -999
         self.rbound = float(parameters[param_id][2]) if len(parameters[param_id])>=3 else +999
+
 
 
     ##########################################################################
@@ -69,8 +73,8 @@ class GP:
             s = s + ' | C=%2d' %program.size()
             s = s + " | FH="+str(len(program.fitness_history))
             s = s + ' | EXP=' + str(simplify(exp))
-            s = s + ' | {R}=' + str(['%.2f' %float(val) for val in program.regression_values.values()])
-            s = s + ' | HASH=' + str(hash(frozenset(program.regression_values.items())))
+            #s = s + ' | {R}=' + str(['%.2f' %float(val) for val in program.regression_values.values()])
+            #s = s + ' | HASH=' + str(hash(frozenset(program.regression_values.items())))
             s = s + '\n'
 
             i = i+1
@@ -454,3 +458,12 @@ def run_target_static(inst_name, param_values):
     
     param_values = ['999999999999' if x=='inf' else '-999999999999' if x=='-inf' else x for x in param_values]
     return float( subprocess.run(executable.split() + [inst_name] + param_values, stdout = subprocess.PIPE).stdout.decode('utf-8') )
+
+
+
+
+def init_references():
+    print('init refs')
+    for inst in instances:
+        GP.references[inst[0]] = -inf
+    print(GP.references)

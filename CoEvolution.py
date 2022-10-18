@@ -13,7 +13,7 @@ class CoEvolution:
             self.gp.append( GP() )
 
 
-    def evolution(self):
+    def para_evolution(self):
 
         print('=======================================================')
         print('Co-Evolution:')

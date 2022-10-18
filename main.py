@@ -26,6 +26,7 @@ import numpy as np
 # init internal state of random number generator
 seed()
 
+init_references()
 
 #==========================================================
 # Problem description
@@ -52,8 +53,10 @@ print('=============================================')
 def run_target_wrapper(inst_param):
     return run_target_static(inst_param[0], inst_param[1])
 
-
-# Initialise parameter values arbitrarily: use average of parameter interval
+#==========================================================
+# Initialise parameter values arbitrarily: 
+# use average of parameter interval
+#==========================================================
 for inst in instances:
     GP.ref_param_values[inst[0]] = []
     for parameter in parameters:
@@ -63,7 +66,10 @@ for inst in instances:
 #print('>>>>>>',GP.ref_param_values)
 
 
-# Initialise parameter values based on best score / for each instance
+#==========================================================
+# Initialise parameter values based on best score 
+# / for each instance
+#==========================================================
 mean_references = {}  # dict to store mean best parameter values
 for inst in instances:
     mean_references[inst[0]] = -inf
@@ -95,6 +101,7 @@ for u in range(INIT_ITERATIONS):
 
                 #==============================
                 # run multiple times
+                #==============================
                 scores_list = None
                 #with Pool(SAMPLE_RUNS) as p:
                 with Pool(1) as p:
@@ -134,7 +141,7 @@ for u in range(INIT_ITERATIONS):
 # GP Co-evolution
 #==========================================================
 pops = CoEvolution()
-pops.evolution()
+pops.para_evolution()
 
 '''
 #==========================================================

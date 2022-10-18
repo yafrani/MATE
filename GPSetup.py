@@ -1,22 +1,25 @@
 from math import inf
 import datetime
 
+#from GP import GP
+
+#'''
 # GP parameters
-POP_SIZE        = 20                   # population size
+POP_SIZE        = 10                   # population size
 GEN_POP_SIZE    = round(POP_SIZE*.75)  # size of offspring population
 MIN_DEPTH       = 2                    # minimum initial tree depth
 MAX_DEPTH       = 4                    # maximum initial tree depth
-TOURNAMENT_SIZE = 5                    # size of tournament for tournament selection
+TOURNAMENT_SIZE = 4                    # size of tournament for tournament selection
 XO_RATE         = 0.8                  # crossover rate
 PROB_MUTATION   = 0.2                  # per-node mutation probability
 BLOAT_CONTROL   = False                # True adds bloat control to fitness function
 
 # Statistical setting
 SAMPLE_RUNS        = 10                # number of samples per GP tree
-STAT_SIGNIFICANCE  = 0.05
+STAT_SIGNIFICANCE  = 0.02
 
 # Initialisation setting
-INIT_ITERATIONS     = 5               # number of repititions for initialisation (searching one parameter and fixing the others)
+INIT_ITERATIONS     = 5                # number of repititions for initialisation (searching one parameter and fixing the others)
 NB_PARAM_CANDIDATES = 10               # number of parameter values
 
 # maximum number of generations to evolve programs
@@ -27,7 +30,7 @@ DT = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
 # Debugging
 debug = True
-
+#'''
 
 # Functions
 def add(x, y): return x + y
@@ -68,3 +71,4 @@ with open('cfg_parameters.txt', 'r') as file:
 
 # Sequential multi-population GP parameters
 #MPGP_ITERATIONS = 1 if len(parameters)==1 else 10
+

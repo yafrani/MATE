@@ -1,3 +1,20 @@
+#!/usr/bin/python3
+
+################################################################################
+# DESC:
+# GA for leading ones
+# 
+# USAGE:
+# ./GA_leadingones.py <instance-name> <param1> <param2>
+# - instance-name: leading one size
+# - param: mutation rate, crossover probability
+#
+# EXAMPLE:
+# - python3 GA_leadingones.py 10 0.5 0.3
+#
+# number of iterations is set to size*log(size) # try with n^2
+################################################################################
+
 import numpy as np
 import sys
 from random import random, randint, seed
@@ -7,10 +24,10 @@ instance = sys.argv[1]
 size = int(instance)
 rate_mu = float(sys.argv[2])
 prob_x = float(sys.argv[3])
-size_pop = 50
+size_pop = 10
 size_offspring = 1
 
-nb_iter = ceil(5*size*size)
+nb_iter = ceil(2*size*size)
 
 # penalise our-of-bound parameter values
 if (rate_mu>1 or rate_mu<0):
@@ -22,13 +39,12 @@ if (prob_x>1 or prob_x<0):
     exit()
 
 # Leading ones fitness
-def fitness(sol):   
-    count = 0 
+def fitness(sol):
+    count = 0
     for i in range(0, size):
-        if (sol[i] == 1): 
-            count+= 1  
-        else:
-            break
+        if (sol[i] == 0):
+            return count
+        count+=1
     return count
 
 # Uniform crossover
